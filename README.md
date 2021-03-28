@@ -1,1 +1,5 @@
-# parrot-trainer
+# Parrot trainer app
+
+Build:
+
+$ flutter build web
