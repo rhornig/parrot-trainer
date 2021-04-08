@@ -21,14 +21,15 @@ class ParrotTrainerApp extends StatelessWidget {
     _soundPool.play(keySound[soundNumber - 1]);
   }
 
-  Expanded buildKey({required Color color, required int soundNumber}) {
+  Widget buildKey({required Color color, required int soundNumber}) {
     return Expanded(
-      child: TextButton(
-        style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(color)),
-        onPressed: () {
+      child: GestureDetector(
+        onTapDown: (TapDownDetails d) {
           playSound(soundNumber);
         },
-        child: Text(""),
+        child: Container(
+          color: color,
+        ),
       ),
     );
   }
@@ -43,12 +44,9 @@ class ParrotTrainerApp extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               buildKey(color: Colors.red, soundNumber: 1),
-              buildKey(color: Colors.orange, soundNumber: 2),
               buildKey(color: Colors.yellow, soundNumber: 3),
               buildKey(color: Colors.green, soundNumber: 4),
-              buildKey(color: Colors.teal, soundNumber: 5),
-              buildKey(color: Colors.blue, soundNumber: 6),
-              buildKey(color: Colors.purple, soundNumber: 7),
+              buildKey(color: Colors.blue.shade900, soundNumber: 6),
             ],
           ),
         ),
