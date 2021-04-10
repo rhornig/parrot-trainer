@@ -21,14 +21,15 @@ class ParrotTrainerApp extends StatelessWidget {
     _soundPool.play(keySound[soundNumber - 1]);
   }
 
-  Widget buildKey({required Color color, required int soundNumber}) {
+  Widget buildTarget({Color color = Colors.black, double size = 0, required int soundNumber}) {
     return Expanded(
-      child: GestureDetector(
-        onTapDown: (TapDownDetails d) {
-          playSound(soundNumber);
-        },
-        child: Container(
-          color: color,
+      child: Container(
+        margin: EdgeInsets.all(size),
+        child: GestureDetector(
+          onTapDown: (TapDownDetails d) {
+            playSound(soundNumber);
+          },
+          child: Container(color: color),
         ),
       ),
     );
@@ -36,17 +37,33 @@ class ParrotTrainerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double targetSize = 40;
     return MaterialApp(
       home: Scaffold(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.white60,
         body: SafeArea(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              buildKey(color: Colors.red, soundNumber: 1),
-              buildKey(color: Colors.yellow, soundNumber: 3),
-              buildKey(color: Colors.green, soundNumber: 4),
-              buildKey(color: Colors.blue.shade900, soundNumber: 6),
+            children: [
+              Expanded(
+                flex: 1,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    buildTarget(color: Colors.red, size: targetSize, soundNumber: 1),
+                    buildTarget(color: Colors.yellow, size: targetSize, soundNumber: 3),
+                  ],
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    buildTarget(color: Colors.green, size: targetSize, soundNumber: 4),
+                    buildTarget(color: Colors.blue.shade900, size: targetSize, soundNumber: 6)
+                  ],
+                ),
+              ),
             ],
           ),
         ),
