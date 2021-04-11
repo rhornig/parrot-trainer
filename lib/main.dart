@@ -72,7 +72,7 @@ class TouchBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTertiaryTapUp: (_) => onAlternateTouch?.call(),
+      onLongPress: () => onAlternateTouch?.call(),
       child: Container(color: color, child: child),
     );
   }
@@ -145,8 +145,8 @@ class SettingsWidget extends StatelessWidget {
     return Slider(
       value: settings.targetSize,
       min: 20,
-      max: 200,
-      divisions: 9,
+      max: 320,
+      divisions: 10,
       label: settings.targetSize.round().toString(),
       onChanged: (double value) => settings.targetSize = value,
     );
@@ -155,7 +155,7 @@ class SettingsWidget extends StatelessWidget {
 
 // settings data model
 class Settings extends ChangeNotifier {
-  double _targetSize = 100.0;
+  double _targetSize = 230.0;
   double get targetSize => _targetSize;
   set targetSize(double targetSize) {
     _targetSize = targetSize;
