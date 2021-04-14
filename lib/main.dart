@@ -129,6 +129,7 @@ class TouchTarget extends StatelessWidget {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTapDown: (_) => onTouch(),
+          onPanStart: (_) => onTouch(),
         ),
       ),
     );
