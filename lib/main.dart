@@ -71,9 +71,13 @@ class TouchBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onLongPress: () => onAlternateTouch?.call(),
-      child: Container(color: color, child: child),
+    return Stack(
+      children: [
+        Container(color: color, child: child),
+        GestureDetector(
+            onLongPress: () => onAlternateTouch?.call(),
+            child: Icon(Icons.settings, size: 40, color: Colors.grey.shade600)),
+      ],
     );
   }
 }
@@ -143,13 +147,18 @@ class SettingsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Slider(
-      value: settings.targetSize,
-      min: 20,
-      max: 320,
-      divisions: 10,
-      label: settings.targetSize.round().toString(),
-      onChanged: (double value) => settings.targetSize = value,
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints.loose(Size(double.infinity, 60)),
+        child: Slider(
+          value: settings.targetSize,
+          min: 20,
+          max: 320,
+          divisions: 10,
+          label: settings.targetSize.round().toString(),
+          onChanged: (double value) => settings.targetSize = value,
+        ),
+      ),
     );
   }
 }
