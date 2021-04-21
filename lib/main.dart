@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -89,34 +91,38 @@ class TouchForeground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            TouchTarget(color: Colors.red, size: settings.targetSize, onTouch: () => playSound(1)),
-            TouchTarget(color: Colors.yellow, size: settings.targetSize, onTouch: () => playSound(3)),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            TouchTarget(color: Colors.green, size: settings.targetSize, onTouch: () => playSound(4)),
-            TouchTarget(color: Colors.blue.shade900, size: settings.targetSize, onTouch: () => playSound(6))
-          ],
-        ),
-      ],
+    return Center(
+      child: Stack(
+        children: [
+          for (final t in settings.targets)
+            TouchTarget(
+                xpct: t.x,
+                ypct: t.y,
+                color: t.color,
+                size: t.size,
+                onTouch: () {
+                  playSound(t.soundNo);
+                  settings.reposition();
+                }),
+          //TouchTarget(xpct: 75, ypct: 25, color: Colors.yellow, size: settings.targetSize, onTouch: () => playSound(3)),
+          //TouchTarget(xpct: 25, ypct: 75, color: Colors.green, size: settings.targetSize, onTouch: () => playSound(4)),
+          //TouchTarget(xpct: 75, ypct: 75, color: Colors.blue.shade900, size: settings.targetSize, onTouch: () => playSound(6)),
+        ],
+      ),
     );
   }
 }
 
 class TouchTarget extends StatelessWidget {
+  final double xpct;
+  final double ypct;
   final Color color;
   final double size;
   final Function() onTouch;
 
   const TouchTarget({
+    this.xpct = 50,
+    this.ypct = 50,
     this.color = Colors.black,
     this.size = 50,
     required this.onTouch,
@@ -125,15 +131,19 @@ class TouchTarget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Container(
-        color: color,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: (_) => onTouch(),
-          onPanStart: (_) => onTouch(),
+    return Positioned(
+      left: MediaQuery.of(context).size.width * xpct / 100 - size / 2,
+      top: MediaQuery.of(context).size.height * ypct / 100 - size / 2,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (_) => onTouch(),
+        onPanStart: (_) => onTouch(),
+        child: SizedBox(
+          width: size,
+          height: size,
+          child: Container(
+            color: color,
+          ),
         ),
       ),
     );
@@ -163,12 +173,44 @@ class SettingsWidget extends StatelessWidget {
   }
 }
 
+class Target {
+  final double x;
+  final double y;
+  final double size;
+  final Color color;
+  final int soundNo;
+
+  Target({required this.x, required this.y, required this.size, required this.color, required this.soundNo});
+}
+
 // settings data model
 class Settings extends ChangeNotifier {
+  final Random _rng = Random();
+  final List<Color> colors = [Colors.red, Colors.yellow, Colors.green, Colors.blue.shade900];
+
+  List<Target> targets = [];
+
+  Settings() {
+    reposition();
+  }
+
   double _targetSize = 230.0;
   double get targetSize => _targetSize;
   set targetSize(double targetSize) {
     _targetSize = targetSize;
+    reposition();
+    notifyListeners();
+  }
+
+  void reposition() {
+    targets = [
+      Target(
+          x: 50 - 30 + _rng.nextDouble() * 60,
+          y: 50 - 30 + _rng.nextDouble() * 60,
+          size: _targetSize,
+          color: colors[0],
+          soundNo: 1),
+    ];
     notifyListeners();
   }
 }
