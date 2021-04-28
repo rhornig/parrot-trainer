@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:soundpool/soundpool.dart';
 
@@ -14,14 +15,14 @@ Future<int> _loadSound(int soundNumber) async {
 }
 
 void playSound(int soundNumber) {
-  _soundPool.play(keySound[soundNumber - 1]);
+  _soundPool.play(keySound[soundNumber]);
 }
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  keySound = [for (int i = 1; i < 8; ++i) await _loadSound(i)];
+  keySound = [for (int i = 0; i < 8; ++i) await _loadSound(i)];
   runApp(ChangeNotifierProvider(
-    create: (context) => Settings(),
+    create: (context) => AppState(),
     child: ParrotTrainerApp(),
   ));
 }
@@ -39,8 +40,8 @@ class _ParrotTrainerAppState extends State<ParrotTrainerApp> {
     return MaterialApp(
       home: Scaffold(
         body: SafeArea(
-          child: Consumer<Settings>(builder: (context, settings, child) {
-            return TouchBackground(
+          child: Consumer<AppState>(builder: (context, settings, child) {
+            return TouchBackgroundWidget(
               settings,
               color: Colors.grey,
               onAlternateTouch: () {
@@ -48,7 +49,7 @@ class _ParrotTrainerAppState extends State<ParrotTrainerApp> {
                   settingsWidgetActive = !settingsWidgetActive;
                 });
               },
-              child: settingsWidgetActive ? SettingsWidget(settings) : TouchForeground(settings),
+              child: settingsWidgetActive ? SettingsWidget(settings) : TouchForegroundWidget(settings),
             );
           }),
         ),
@@ -57,101 +58,8 @@ class _ParrotTrainerAppState extends State<ParrotTrainerApp> {
   }
 }
 
-class TouchBackground extends StatelessWidget {
-  final Settings settings;
-  final Color color;
-  final Function()? onAlternateTouch;
-  final Widget child;
-
-  const TouchBackground(
-    this.settings, {
-    this.color = Colors.white,
-    required this.child,
-    this.onAlternateTouch,
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Container(color: color, child: child),
-        GestureDetector(
-            onLongPress: () => onAlternateTouch?.call(),
-            child: Icon(Icons.settings, size: 40, color: Colors.grey.shade600)),
-      ],
-    );
-  }
-}
-
-class TouchForeground extends StatelessWidget {
-  final Settings settings;
-
-  const TouchForeground(this.settings, {Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Stack(
-        children: [
-          for (final t in settings.targets)
-            TouchTarget(
-                xpct: t.x,
-                ypct: t.y,
-                color: t.color,
-                size: t.size,
-                onTouch: () {
-                  playSound(t.soundNo);
-                  settings.reposition();
-                }),
-          //TouchTarget(xpct: 75, ypct: 25, color: Colors.yellow, size: settings.targetSize, onTouch: () => playSound(3)),
-          //TouchTarget(xpct: 25, ypct: 75, color: Colors.green, size: settings.targetSize, onTouch: () => playSound(4)),
-          //TouchTarget(xpct: 75, ypct: 75, color: Colors.blue.shade900, size: settings.targetSize, onTouch: () => playSound(6)),
-        ],
-      ),
-    );
-  }
-}
-
-class TouchTarget extends StatelessWidget {
-  final double xpct;
-  final double ypct;
-  final Color color;
-  final double size;
-  final Function() onTouch;
-
-  const TouchTarget({
-    this.xpct = 50,
-    this.ypct = 50,
-    this.color = Colors.black,
-    this.size = 50,
-    required this.onTouch,
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      left: MediaQuery.of(context).size.width * xpct / 100 - size / 2,
-      top: MediaQuery.of(context).size.height * ypct / 100 - size / 2,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTapDown: (_) => onTouch(),
-        onPanStart: (_) => onTouch(),
-        child: SizedBox(
-          width: size,
-          height: size,
-          child: Container(
-            color: color,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class SettingsWidget extends StatelessWidget {
-  final Settings settings;
+  final AppState settings;
 
   const SettingsWidget(this.settings, {Key? key}) : super(key: key);
 
@@ -173,28 +81,131 @@ class SettingsWidget extends StatelessWidget {
   }
 }
 
-class Target {
-  final double x;
-  final double y;
-  final double size;
+class TouchBackgroundWidget extends StatelessWidget {
+  final AppState settings;
   final Color color;
-  final int soundNo;
+  final Function()? onAlternateTouch;
+  final Widget child;
 
-  Target({required this.x, required this.y, required this.size, required this.color, required this.soundNo});
+  const TouchBackgroundWidget(
+    this.settings, {
+    this.color = Colors.white,
+    required this.child,
+    this.onAlternateTouch,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Container(color: color, child: child),
+        GestureDetector(
+            onLongPress: () => onAlternateTouch?.call(),
+            child: Icon(Icons.settings, size: 80, color: Colors.black.withAlpha(10))),
+      ],
+    );
+  }
+}
+
+class TouchForegroundWidget extends StatelessWidget {
+  final AppState settings;
+
+  const TouchForegroundWidget(this.settings, {Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Stack(
+        children: [
+          for (final targetConfig in settings.targets)
+            TouchTargetWidget(
+                config: targetConfig,
+                onTouch: () {
+                  playSound(targetConfig.soundNo);
+                  settings.reposition();
+                }),
+        ],
+      ),
+    );
+  }
+}
+
+class TouchTargetWidget extends StatelessWidget {
+  final TargetConfig config;
+  final Function() onTouch;
+
+  const TouchTargetWidget({
+    required this.config,
+    required this.onTouch,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: MediaQuery.of(context).size.width * config.x / 100 - config.size / 2,
+      top: MediaQuery.of(context).size.height * config.y / 100 - config.size / 2,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (_) => onTouch(),
+        onPanStart: (_) => onTouch(),
+        child: SizedBox(
+          width: config.size,
+          height: config.size,
+          child: Container(
+            color: config.color,
+            child: Transform.scale(
+              scale: config.cueScale,
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.black.withAlpha(config.cueAlpha),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class TargetConfig {
+  double x;
+  double y;
+  double size;
+  Color color;
+  int soundNo;
+  double cueScale = 0;
+  int cueAlpha = 255;
+
+  TargetConfig({
+    required this.x,
+    required this.y,
+    required this.soundNo,
+    this.size = 80,
+    this.color = Colors.grey,
+    this.cueScale = 0,
+    this.cueAlpha = 255,
+  });
 }
 
 // settings data model
-class Settings extends ChangeNotifier {
+class AppState extends ChangeNotifier {
   final Random _rng = Random();
   final List<Color> colors = [Colors.red, Colors.yellow, Colors.green, Colors.blue.shade900];
 
-  List<Target> targets = [];
+  List<TargetConfig> targets = [
+    TargetConfig(x: 250, y: 250, color: Colors.red, cueScale: 0, soundNo: 0),
+    TargetConfig(x: 50, y: 50, color: Colors.red, cueScale: 0.1, soundNo: 1),
+  ];
 
-  Settings() {
+  AppState() {
     reposition();
   }
 
-  double _targetSize = 230.0;
+  double _targetSize = 80.0;
   double get targetSize => _targetSize;
   set targetSize(double targetSize) {
     _targetSize = targetSize;
@@ -203,14 +214,13 @@ class Settings extends ChangeNotifier {
   }
 
   void reposition() {
-    targets = [
-      Target(
-          x: 50 - 30 + _rng.nextDouble() * 60,
-          y: 50 - 30 + _rng.nextDouble() * 60,
-          size: _targetSize,
-          color: colors[0],
-          soundNo: 1),
-    ];
+    for (var t in targets) {
+      t
+        ..x = 50 - 30 + _rng.nextDouble() * 60
+        ..y = 50 - 30 + _rng.nextDouble() * 60
+        ..size = _targetSize
+        ..color = colors[0];
+    }
     notifyListeners();
   }
 }
