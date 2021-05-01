@@ -58,29 +58,6 @@ class _ParrotTrainerAppState extends State<ParrotTrainerApp> {
   }
 }
 
-class SettingsWidget extends StatelessWidget {
-  final AppState settings;
-
-  const SettingsWidget(this.settings, {Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: BoxConstraints.loose(Size(double.infinity, 60)),
-        child: Slider(
-          value: settings.targetSize,
-          min: 20,
-          max: 320,
-          divisions: 10,
-          label: settings.targetSize.round().toString(),
-          onChanged: (double value) => settings.targetSize = value,
-        ),
-      ),
-    );
-  }
-}
-
 class TouchBackgroundWidget extends StatelessWidget {
   final AppState settings;
   final Color color;
@@ -118,12 +95,13 @@ class TouchForegroundWidget extends StatelessWidget {
     return Center(
       child: Stack(
         children: [
-          for (final targetConfig in settings.targets)
+          for (int i = 0; i < settings.targets.length; ++i)
             TouchTargetWidget(
-                config: targetConfig,
+                position: kSlotPositions[i],
+                config: settings.targets[i],
                 onTouch: () {
-                  playSound(targetConfig.soundNo);
-                  settings.reposition();
+                  playSound(settings.targets[i].soundIndex);
+                  settings.shuffle();
                 }),
         ],
       ),
@@ -132,10 +110,12 @@ class TouchForegroundWidget extends StatelessWidget {
 }
 
 class TouchTargetWidget extends StatelessWidget {
+  final Offset position;
   final TargetConfig config;
   final Function() onTouch;
 
   const TouchTargetWidget({
+    required this.position,
     required this.config,
     required this.onTouch,
     Key? key,
@@ -144,8 +124,8 @@ class TouchTargetWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      left: MediaQuery.of(context).size.width * config.x / 100 - config.size / 2,
-      top: MediaQuery.of(context).size.height * config.y / 100 - config.size / 2,
+      left: MediaQuery.of(context).size.width * position.dx / 100 - config.size / 2,
+      top: MediaQuery.of(context).size.height * position.dy / 100 - config.size / 2,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTapDown: (_) => onTouch(),
@@ -171,56 +151,179 @@ class TouchTargetWidget extends StatelessWidget {
   }
 }
 
+class SettingsWidget extends StatelessWidget {
+  final AppState settings;
+
+  const SettingsWidget(this.settings, {Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [SizedBox(height: 50, width: 100)],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SlotSetting(settings, settings.targets[0]),
+            SlotSetting(settings, settings.targets[1]),
+            SlotSetting(settings, settings.targets[2]),
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SlotSetting(settings, settings.targets[3]),
+            SlotSetting(settings, settings.targets[4]),
+            SlotSetting(settings, settings.targets[5]),
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SlotSetting(settings, settings.targets[6]),
+            SlotSetting(settings, settings.targets[7]),
+            SlotSetting(settings, settings.targets[8]),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class SlotSetting extends StatelessWidget {
+  final AppState settings;
+  final TargetConfig targetConfig;
+  const SlotSetting(this.settings, this.targetConfig, {Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Card(
+        color: Colors.grey.shade400,
+        child: Column(
+          children: [
+            Slider(
+              value: targetConfig.colorIndex.toDouble(),
+              min: 0,
+              max: 6,
+              divisions: 6,
+              activeColor: targetConfig.color,
+              label: "color: ${targetConfig.colorName}",
+              onChanged: (double value) {
+                targetConfig.colorIndex = value.round();
+                settings.notify();
+              },
+            ),
+            Slider(
+              value: targetConfig.size,
+              min: 0,
+              max: 125,
+              divisions: 5,
+              label: "size: ${targetConfig.size.round()}",
+              onChanged: (double value) {
+                targetConfig.size = value;
+                settings.notify();
+              },
+            ),
+            Slider(
+              value: targetConfig.cueScale,
+              min: 0,
+              max: 0.5,
+              divisions: 5,
+              label: "cue scale: ${(targetConfig.cueScale * 100).toInt()}%",
+              onChanged: (double value) {
+                targetConfig.cueScale = value;
+                settings.notify();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class TargetConfig {
-  double x;
-  double y;
+  static const List<Color> _colors = [
+    Colors.transparent,
+    Colors.red,
+    Colors.yellow,
+    Colors.green,
+    Colors.blue,
+    Colors.black,
+    Colors.white,
+  ];
+
+  static const List<String> _colorNames = ["transparent", "red", "yellow", "green", "blue", "black", "white"];
+
+  int soundIndex;
   double size;
-  Color color;
-  int soundNo;
-  double cueScale = 0;
-  int cueAlpha = 255;
+  int colorIndex;
+  double cueScale;
+  int cueAlpha;
+
+  Color get color => _colors[colorIndex];
+  String get colorName => _colorNames[colorIndex];
 
   TargetConfig({
-    required this.x,
-    required this.y,
-    required this.soundNo,
-    this.size = 80,
-    this.color = Colors.grey,
+    this.soundIndex = 0,
+    this.size = 0,
+    this.colorIndex = 0,
     this.cueScale = 0,
-    this.cueAlpha = 255,
+    this.cueAlpha = 128,
   });
 }
+
+const List<Offset> kSlotPositions = [
+  Offset(20, 20),
+  Offset(50, 20),
+  Offset(80, 20),
+  Offset(20, 50),
+  Offset(50, 50),
+  Offset(80, 50),
+  Offset(20, 80),
+  Offset(50, 80),
+  Offset(80, 80),
+];
 
 // settings data model
 class AppState extends ChangeNotifier {
   final Random _rng = Random();
-  final List<Color> colors = [Colors.red, Colors.yellow, Colors.green, Colors.blue.shade900];
 
   List<TargetConfig> targets = [
-    TargetConfig(x: 250, y: 250, color: Colors.red, cueScale: 0, soundNo: 0),
-    TargetConfig(x: 50, y: 50, color: Colors.red, cueScale: 0.1, soundNo: 1),
+    TargetConfig(size: 100, cueScale: 0.3, soundIndex: 1),
+    TargetConfig(size: 100, cueScale: 0.3, soundIndex: 1),
+    TargetConfig(),
+    TargetConfig(),
+    TargetConfig(),
+    TargetConfig(),
+    TargetConfig(),
+    TargetConfig(),
+    TargetConfig(),
   ];
 
-  AppState() {
-    reposition();
+  AppState() {}
+
+  void notify() {
+    notifyListeners();
   }
 
   double _targetSize = 80.0;
   double get targetSize => _targetSize;
   set targetSize(double targetSize) {
     _targetSize = targetSize;
-    reposition();
     notifyListeners();
   }
 
-  void reposition() {
-    for (var t in targets) {
-      t
-        ..x = 50 - 30 + _rng.nextDouble() * 60
-        ..y = 50 - 30 + _rng.nextDouble() * 60
-        ..size = _targetSize
-        ..color = colors[0];
-    }
+  void shuffle() {
+    targets.shuffle(_rng);
     notifyListeners();
   }
 }
