@@ -129,18 +129,18 @@ class TouchTargetWidget extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTapDown: (_) => onTouch(),
-        onPanStart: (_) => onTouch(),
+        // onPanStart: (_) => onTouch(),
         child: SizedBox(
           width: config.size,
           height: config.size,
           child: Container(
             color: config.color,
             child: Transform.scale(
-              scale: config.cueScale,
+              scale: config.cueScale / 100.0,
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.black.withAlpha(config.cueAlpha),
+                  color: (config.color == Colors.black ? Colors.white : Colors.black).withAlpha(config.cueAlpha),
                 ),
               ),
             ),
@@ -158,41 +158,43 @@ class SettingsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [SizedBox(height: 50, width: 100)],
-        ),
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            SlotSetting(settings, settings.targets[0]),
-            SlotSetting(settings, settings.targets[1]),
-            SlotSetting(settings, settings.targets[2]),
-          ],
-        ),
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            SlotSetting(settings, settings.targets[3]),
-            SlotSetting(settings, settings.targets[4]),
-            SlotSetting(settings, settings.targets[5]),
-          ],
-        ),
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            SlotSetting(settings, settings.targets[6]),
-            SlotSetting(settings, settings.targets[7]),
-            SlotSetting(settings, settings.targets[8]),
-          ],
-        ),
-      ],
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [SizedBox(height: 80, width: 100)],
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SlotSetting(settings, settings.targets[0]),
+              SlotSetting(settings, settings.targets[1]),
+              SlotSetting(settings, settings.targets[2]),
+            ],
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SlotSetting(settings, settings.targets[3]),
+              SlotSetting(settings, settings.targets[4]),
+              SlotSetting(settings, settings.targets[5]),
+            ],
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SlotSetting(settings, settings.targets[6]),
+              SlotSetting(settings, settings.targets[7]),
+              SlotSetting(settings, settings.targets[8]),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -224,8 +226,8 @@ class SlotSetting extends StatelessWidget {
             Slider(
               value: targetConfig.size,
               min: 0,
-              max: 125,
-              divisions: 5,
+              max: 200,
+              divisions: 4,
               label: "size: ${targetConfig.size.round()}",
               onChanged: (double value) {
                 targetConfig.size = value;
@@ -233,13 +235,35 @@ class SlotSetting extends StatelessWidget {
               },
             ),
             Slider(
-              value: targetConfig.cueScale,
+              value: targetConfig.cueScale.toDouble(),
               min: 0,
-              max: 0.5,
+              max: 50,
               divisions: 5,
-              label: "cue scale: ${(targetConfig.cueScale * 100).toInt()}%",
+              label: "cue scale: ${targetConfig.cueScale}%",
               onChanged: (double value) {
-                targetConfig.cueScale = value;
+                targetConfig.cueScale = value.toInt();
+                settings.notify();
+              },
+            ),
+            Slider(
+              value: targetConfig.cueAlpha.toDouble(),
+              min: 5,
+              max: 100,
+              divisions: 9,
+              label: "cue alpha: ${targetConfig.cueAlpha.toInt()}%",
+              onChanged: (double value) {
+                targetConfig.cueAlpha = value.toInt();
+                settings.notify();
+              },
+            ),
+            Slider(
+              value: targetConfig.soundIndex.toDouble(),
+              min: 0,
+              max: 1,
+              divisions: 1,
+              label: "sound: ${targetConfig.soundIndex}",
+              onChanged: (double value) {
+                targetConfig.soundIndex = value.toInt();
                 settings.notify();
               },
             ),
@@ -251,8 +275,11 @@ class SlotSetting extends StatelessWidget {
 }
 
 class TargetConfig {
+  final Random _rng = Random();
+
   static const List<Color> _colors = [
     Colors.transparent,
+    Colors.cyan,
     Colors.red,
     Colors.yellow,
     Colors.green,
@@ -261,15 +288,17 @@ class TargetConfig {
     Colors.white,
   ];
 
-  static const List<String> _colorNames = ["transparent", "red", "yellow", "green", "blue", "black", "white"];
+  static const List<String> _colorNames = ["transparent", "random", "red", "yellow", "green", "blue", "black", "white"];
 
   int soundIndex;
   double size;
   int colorIndex;
-  double cueScale;
-  int cueAlpha;
+  int cueScale; // 0 - 50%
+  int cueAlpha; // 0 - 100 %
 
-  Color get color => _colors[colorIndex];
+  Color get color => colorIndex == 1 // on index 1, give back a random color from red,yellow,green,blue
+      ? _colors[_rng.nextInt(4) + 2]
+      : _colors[colorIndex];
   String get colorName => _colorNames[colorIndex];
 
   TargetConfig({
@@ -277,7 +306,7 @@ class TargetConfig {
     this.size = 0,
     this.colorIndex = 0,
     this.cueScale = 0,
-    this.cueAlpha = 128,
+    this.cueAlpha = 100,
   });
 }
 
@@ -298,8 +327,8 @@ class AppState extends ChangeNotifier {
   final Random _rng = Random();
 
   List<TargetConfig> targets = [
-    TargetConfig(size: 100, cueScale: 0.3, soundIndex: 1),
-    TargetConfig(size: 100, cueScale: 0.3, soundIndex: 1),
+    TargetConfig(size: 100, cueScale: 30, soundIndex: 1),
+    TargetConfig(size: 100, cueScale: 30, soundIndex: 1),
     TargetConfig(),
     TargetConfig(),
     TargetConfig(),
