@@ -42,7 +42,7 @@ class _ParrotTrainerAppState extends State<ParrotTrainerApp> {
       home: Scaffold(
         body: SafeArea(
           child: Consumer<AppState>(builder: (context, state, child) {
-            return state.settingsPanelActive
+            return state.settingsPanelVisible
                 ? SettingsPanel(state)
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -90,7 +90,7 @@ class StatPanel extends StatelessWidget {
           GestureDetector(
             onLongPress: () {
               state
-                ..settingsPanelActive = true
+                ..settingsPanelVisible = true
                 ..notify();
             },
             child: Icon(Icons.settings, size: 80, color: Colors.white10),
@@ -113,18 +113,19 @@ class PlayArea extends StatelessWidget {
       child: Stack(
         children: [
           Container(color: state.backgroundColor),
-          GridView.count(
-            crossAxisCount: 3,
-            children: [
-              for (int i = 0; i < state.targets.length; ++i)
-                TouchTarget(
-                    position: kSlotPositions[i],
-                    config: state.targets[i],
-                    onTouch: () {
-                      state.executeConsequence(state.targets[i].consequence);
-                    }),
-            ],
-          ),
+          if (state.playAreaVisible)
+            GridView.count(
+              crossAxisCount: 3,
+              children: [
+                for (int i = 0; i < state.targets.length; ++i)
+                  TouchTarget(
+                      position: kSlotPositions[i],
+                      config: state.targets[i],
+                      onTouch: () {
+                        state.executeConsequence(state.targets[i].consequence);
+                      }),
+              ],
+            ),
         ],
       ),
     );
@@ -181,17 +182,42 @@ class SettingsPanel extends StatelessWidget {
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              OutlinedButton(
-                  onPressed: () {
-                    state
-                      ..settingsPanelActive = false
-                      ..notify();
+          SizedBox(
+            height: 100,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Slider(
+                  value: state.successDelay.toDouble(),
+                  min: 0,
+                  max: 5,
+                  divisions: 5,
+                  label: "success timeout: ${state.successDelay}s",
+                  onChanged: (double value) {
+                    state.successDelay = value.round();
+                    state.notify();
                   },
-                  child: Text("Ok")),
-            ],
+                ),
+                Slider(
+                  value: state.failureDelay.toDouble(),
+                  min: 0,
+                  max: 5,
+                  divisions: 5,
+                  label: "failure timeout: ${state.failureDelay}s",
+                  onChanged: (double value) {
+                    state.failureDelay = value.round();
+                    state.notify();
+                  },
+                ),
+                OutlinedButton(
+                    onPressed: () {
+                      state
+                        ..settingsPanelVisible = false
+                        ..notify();
+                    },
+                    child: Text("Ok")),
+              ],
+            ),
           ),
           Row(
             mainAxisSize: MainAxisSize.max,
@@ -275,7 +301,7 @@ class SlotSettingCard extends StatelessWidget {
             Slider(
               value: targetConfig.cueAlpha.toDouble(),
               min: 5,
-              max: 100,
+              max: 95,
               divisions: 9,
               activeColor: Colors.blue.withAlpha(targetConfig.cueAlpha.toInt() * 2),
               label: "cue alpha: ${targetConfig.cueAlpha.toInt()}%",
@@ -336,7 +362,7 @@ class TargetConfig {
     this.size = 0,
     this.colorIndex = 0,
     this.cueScale = 0,
-    this.cueAlpha = 100,
+    this.cueAlpha = 95,
   });
 }
 
@@ -354,16 +380,26 @@ const List<Offset> kSlotPositions = [
 
 // settings data model
 class AppState extends ChangeNotifier {
-  final Random _rng = Random();
-  bool settingsPanelActive = false;
+  static const int kFailure = 0;
+  static const int kNeutral = 1;
+  static const int kSuccess = 2;
 
+  bool settingsPanelVisible = false;
+  bool playAreaVisible = true;
+
+  // statistics counters
   int success = 0;
   int failure = 0;
+
+  // timeouts after success/failure events
+  int successDelay = 2;
+  int failureDelay = 4;
+
   Color backgroundColor = Colors.grey;
 
   List<TargetConfig> targets = [
-    TargetConfig(size: 100, cueScale: 30, consequence: 2),
-    TargetConfig(size: 100, cueScale: 30, consequence: 2),
+    TargetConfig(size: 100, cueScale: 30, consequence: kSuccess),
+    TargetConfig(size: 100, cueScale: 30, consequence: kSuccess),
     TargetConfig(),
     TargetConfig(),
     TargetConfig(),
@@ -378,19 +414,41 @@ class AppState extends ChangeNotifier {
   }
 
   void executeConsequence(int consequence) {
-    if (consequence == 0) {
-      // failure
-      playSound(0);
+    if (consequence == kFailure) {
       failure++;
-      targets.shuffle(_rng);
-      notifyListeners();
+      playSound(0);
+      targets.shuffle();
+
+      if (failureDelay != 0) {
+        // turn off play area for a while
+        playAreaVisible = false;
+        // wait a bit and then turn back the play area
+        Future.delayed(Duration(seconds: failureDelay), () {
+          playAreaVisible = true;
+          notifyListeners();
+        });
+      }
     }
-    if (consequence == 2) {
-      // success
-      playSound(1);
+
+    if (consequence == kNeutral) {}
+
+    // success
+    if (consequence == kSuccess) {
       success++;
-      targets.shuffle(_rng);
-      notifyListeners();
+      playSound(1);
+      targets.shuffle();
+
+      if (successDelay != 0) {
+        // turn off play area for a while
+        playAreaVisible = false;
+        // wait a bit and then turn back the play area
+        Future.delayed(Duration(seconds: successDelay), () {
+          playAreaVisible = true;
+          notifyListeners();
+        });
+      }
     }
+
+    notifyListeners();
   }
 }
