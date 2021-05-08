@@ -24,6 +24,10 @@ class _ParrotTrainerAppState extends State<ParrotTrainerApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        canvasColor: Colors.black,
+        cardColor: Colors.grey.shade900,
+      ),
       home: Scaffold(
         body: SafeArea(
           child: Consumer<AppState>(builder: (context, state, child) {
@@ -53,8 +57,6 @@ class StatPanel extends StatelessWidget {
     int pct = (sum == 0) ? 0 : ((state.success / sum) * 100).round();
 
     return Expanded(
-        child: Container(
-      color: Colors.black,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -68,7 +70,7 @@ class StatPanel extends StatelessWidget {
             },
             child: Text(
               "S${state.success} F${state.failure}\n$pct% ∑$sum",
-              style: TextStyle(color: Colors.white24, fontSize: 40),
+              style: TextStyle(color: Colors.grey.shade900, fontSize: 40),
               textAlign: TextAlign.end,
             ),
           ),
@@ -78,11 +80,11 @@ class StatPanel extends StatelessWidget {
                 ..settingsPanelVisible = true
                 ..notify();
             },
-            child: Icon(Icons.settings, size: 80, color: Colors.white10),
+            child: Icon(Icons.settings, size: 80, color: Colors.grey.shade900),
           ),
         ],
       ),
-    ));
+    );
   }
 }
 
@@ -100,6 +102,7 @@ class PlayArea extends StatelessWidget {
           Container(color: state.backgroundColor),
           if (state.playAreaVisible)
             GridView.count(
+              physics: NeverScrollableScrollPhysics(), // to prevent scrolling
               crossAxisCount: 3,
               children: [
                 for (int i = 0; i < state.targets.length; ++i)

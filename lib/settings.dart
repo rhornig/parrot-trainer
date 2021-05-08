@@ -10,77 +10,75 @@ class SettingsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          SizedBox(
-            height: 100,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Slider(
-                  value: state.successDelay.toDouble(),
-                  min: 0,
-                  max: 5,
-                  divisions: 5,
-                  label: "success timeout: ${state.successDelay}s",
-                  onChanged: (double value) {
-                    state.successDelay = value.round();
-                    state.notify();
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        SizedBox(
+          height: 100,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Slider(
+                value: state.successDelay.toDouble(),
+                min: 0,
+                max: 5,
+                divisions: 5,
+                label: "success timeout: ${state.successDelay}s",
+                onChanged: (double value) {
+                  state.successDelay = value.round();
+                  state.notify();
+                },
+              ),
+              Slider(
+                value: state.failureDelay.toDouble(),
+                min: 0,
+                max: 5,
+                divisions: 5,
+                label: "failure timeout: ${state.failureDelay}s",
+                onChanged: (double value) {
+                  state.failureDelay = value.round();
+                  state.notify();
+                },
+              ),
+              ElevatedButton(
+                  onPressed: () {
+                    state
+                      ..settingsPanelVisible = false
+                      ..notify();
                   },
-                ),
-                Slider(
-                  value: state.failureDelay.toDouble(),
-                  min: 0,
-                  max: 5,
-                  divisions: 5,
-                  label: "failure timeout: ${state.failureDelay}s",
-                  onChanged: (double value) {
-                    state.failureDelay = value.round();
-                    state.notify();
-                  },
-                ),
-                OutlinedButton(
-                    onPressed: () {
-                      state
-                        ..settingsPanelVisible = false
-                        ..notify();
-                    },
-                    child: Text("Ok")),
-              ],
-            ),
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SlotSettingCard(state, state.targets[0]),
-              SlotSettingCard(state, state.targets[1]),
-              SlotSettingCard(state, state.targets[2]),
+                  child: Text("Ok")),
             ],
           ),
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SlotSettingCard(state, state.targets[3]),
-              SlotSettingCard(state, state.targets[4]),
-              SlotSettingCard(state, state.targets[5]),
-            ],
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SlotSettingCard(state, state.targets[6]),
-              SlotSettingCard(state, state.targets[7]),
-              SlotSettingCard(state, state.targets[8]),
-            ],
-          ),
-        ],
-      ),
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SlotSettingCard(state, state.targets[0]),
+            SlotSettingCard(state, state.targets[1]),
+            SlotSettingCard(state, state.targets[2]),
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SlotSettingCard(state, state.targets[3]),
+            SlotSettingCard(state, state.targets[4]),
+            SlotSettingCard(state, state.targets[5]),
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SlotSettingCard(state, state.targets[6]),
+            SlotSettingCard(state, state.targets[7]),
+            SlotSettingCard(state, state.targets[8]),
+          ],
+        ),
+      ],
     );
   }
 }
@@ -94,7 +92,6 @@ class SlotSettingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Card(
-        color: Colors.grey.shade400,
         child: Column(
           children: [
             Slider(
