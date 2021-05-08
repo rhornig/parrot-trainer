@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'backend.dart';
 import 'settings.dart';
+import 'statistics.dart';
 
 // TODO baybe https://riverpod.dev/ would be a better state management solution?
 // https://pub.dev/packages/get is also interesting
@@ -24,10 +25,7 @@ class _ParrotTrainerAppState extends State<ParrotTrainerApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-        canvasColor: Colors.black,
-        cardColor: Colors.grey.shade900,
-      ),
+      theme: ThemeData(canvasColor: Colors.black, cardColor: Colors.grey.shade900),
       home: Scaffold(
         body: SafeArea(
           child: Consumer<AppState>(builder: (context, state, child) {
@@ -35,10 +33,7 @@ class _ParrotTrainerAppState extends State<ParrotTrainerApp> {
                 ? SettingsPanel(state)
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      PlayArea(state),
-                      StatPanel(state),
-                    ],
+                    children: [PlayArea(state), StatisticsPanel(state)],
                   );
           }),
         ),
@@ -47,50 +42,8 @@ class _ParrotTrainerAppState extends State<ParrotTrainerApp> {
   }
 }
 
-class StatPanel extends StatelessWidget {
-  final AppState state;
-  const StatPanel(this.state, {Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    int sum = state.success + state.failure;
-    int pct = (sum == 0) ? 0 : ((state.success / sum) * 100).round();
-
-    return Expanded(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          GestureDetector(
-            onLongPress: () {
-              state
-                ..failure = 0
-                ..success = 0
-                ..notify();
-            },
-            child: Text(
-              "S${state.success} F${state.failure}\n$pct% ∑$sum",
-              style: TextStyle(color: Colors.grey.shade900, fontSize: 40),
-              textAlign: TextAlign.end,
-            ),
-          ),
-          GestureDetector(
-            onLongPress: () {
-              state
-                ..settingsPanelVisible = true
-                ..notify();
-            },
-            child: Icon(Icons.settings, size: 80, color: Colors.grey.shade900),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class PlayArea extends StatelessWidget {
   final AppState state;
-
   const PlayArea(this.state, {Key? key}) : super(key: key);
 
   @override
@@ -101,17 +54,13 @@ class PlayArea extends StatelessWidget {
         children: [
           Container(color: state.backgroundColor),
           if (state.playAreaVisible)
-            GridView.count(
-              physics: NeverScrollableScrollPhysics(), // to prevent scrolling
-              crossAxisCount: 3,
-              children: [
-                for (int i = 0; i < state.targets.length; ++i)
-                  TouchTarget(
-                      config: state.targets[i],
-                      onTouch: () {
-                        state.executeConsequence(state.targets[i].consequence);
-                      }),
-              ],
+            GestureDetector(
+              onTapDown: (_) => state.executeConsequence(state.backgroundConsequence),
+              child: GridView.count(
+                physics: NeverScrollableScrollPhysics(), // to prevent scrolling
+                crossAxisCount: 3,
+                children: [for (var t in state.targets) TouchTarget(state, t)],
+              ),
             ),
         ],
       ),
@@ -120,31 +69,25 @@ class PlayArea extends StatelessWidget {
 }
 
 class TouchTarget extends StatelessWidget {
-  final TargetConfig config;
-  final Function() onTouch;
-
-  const TouchTarget({
-    required this.config,
-    required this.onTouch,
-    Key? key,
-  }) : super(key: key);
+  final AppState state;
+  final TargetConfig target;
+  const TouchTarget(this.state, this.target, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: GestureDetector(
-        behavior: HitTestBehavior.opaque, // FIXME do we need this?
-        onTapDown: (_) => onTouch(),
+        onTapDown: (_) => state.executeConsequence(target.consequence),
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: config.size, maxHeight: config.size),
+          constraints: BoxConstraints(maxWidth: target.size, maxHeight: target.size),
           child: Container(
-            color: config.color,
+            color: target.color,
             child: Transform.scale(
-              scale: config.cueScale / 100.0,
+              scale: target.cueScale / 100.0,
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: (config.color == Colors.black ? Colors.white : Colors.black).withAlpha(config.cueAlpha),
+                  color: (target.color == Colors.black ? Colors.white : Colors.black).withAlpha(target.cueAlpha),
                 ),
               ),
             ),

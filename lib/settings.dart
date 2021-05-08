@@ -5,7 +5,6 @@ import 'backend.dart';
 
 class SettingsPanel extends StatelessWidget {
   final AppState state;
-
   const SettingsPanel(this.state, {Key? key}) : super(key: key);
 
   @override
@@ -19,6 +18,18 @@ class SettingsPanel extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
+              Slider(
+                value: state.backgroundConsequence.toDouble(),
+                activeColor: [Colors.red, Colors.orange, Colors.green][state.backgroundConsequence],
+                min: 0,
+                max: 2,
+                divisions: 2,
+                label: "background result: " + ["failure", "neutral", "success"][state.backgroundConsequence],
+                onChanged: (double value) {
+                  state.backgroundConsequence = value.toInt();
+                  state.notify();
+                },
+              ),
               Slider(
                 value: state.successDelay.toDouble(),
                 min: 0,

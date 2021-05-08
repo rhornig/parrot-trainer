@@ -52,6 +52,7 @@ class AppState extends ChangeNotifier {
 
   // statistics counters
   int success = 0;
+  int neutral = 0;
   int failure = 0;
 
   // timeouts after success or failure events
@@ -59,6 +60,7 @@ class AppState extends ChangeNotifier {
   int failureDelay = 4;
 
   Color backgroundColor = Colors.grey;
+  int backgroundConsequence = kNeutral;
 
   List<TargetConfig> targets = [
     TargetConfig(size: 100, cueScale: 30, consequence: kSuccess),
@@ -94,7 +96,9 @@ class AppState extends ChangeNotifier {
       }
     }
 
-    if (consequence == kNeutral) {}
+    if (consequence == kNeutral) {
+      neutral++;
+    }
 
     // success
     if (consequence == kSuccess) {
