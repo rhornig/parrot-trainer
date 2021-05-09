@@ -47,6 +47,7 @@ class AppState extends ChangeNotifier {
   static const int kNeutral = 1;
   static const int kSuccess = 2;
 
+  bool inputAllowed = true;
   bool settingsPanelVisible = false;
   bool playAreaVisible = true;
 
@@ -80,6 +81,10 @@ class AppState extends ChangeNotifier {
   }
 
   void executeConsequence(int consequence) {
+    // disable input after a touch to prevent multiple touches and registering a
+    // touch event behind a target. Input will be allowed after a timeout.
+    inputAllowed = false;
+
     if (consequence == kFailure) {
       failure++;
       _playSound(Sound.failure);
@@ -91,6 +96,7 @@ class AppState extends ChangeNotifier {
         // wait a bit and then turn back the play area
         Future.delayed(Duration(seconds: failureDelay), () {
           playAreaVisible = true;
+          inputAllowed = true;
           notifyListeners();
         });
       }
@@ -98,6 +104,9 @@ class AppState extends ChangeNotifier {
 
     if (consequence == kNeutral) {
       neutral++;
+      Future.delayed(Duration(milliseconds: 500), () {
+        inputAllowed = true;
+      });
     }
 
     // success
@@ -112,6 +121,7 @@ class AppState extends ChangeNotifier {
         // wait a bit and then turn back the play area
         Future.delayed(Duration(seconds: successDelay), () {
           playAreaVisible = true;
+          inputAllowed = true;
           notifyListeners();
         });
       }
