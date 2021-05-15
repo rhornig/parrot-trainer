@@ -91,13 +91,14 @@ class TouchTarget extends StatelessWidget {
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: target.size, maxHeight: target.size),
           child: Container(
-            color: target.color,
+            color: target.shapeColor.color,
             child: Transform.scale(
               scale: target.cueScale / 100.0,
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: (target.color == Colors.black ? Colors.white : Colors.black).withAlpha(target.cueAlpha),
+                  color:
+                      (target.shapeColor == ShapeColor.black ? Colors.white : Colors.black).withAlpha(target.cueAlpha),
                 ),
               ),
             ),

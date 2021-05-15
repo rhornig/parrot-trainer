@@ -5,37 +5,42 @@ import 'package:flutter/services.dart';
 import 'package:soundpool/soundpool.dart';
 
 /// data classes
-class TargetConfig {
-  final Random _rng = Random();
 
-  static const List<Color> _colors = [
+// symbolic shape colors. Random colors must be at the end and they start with random1
+enum ShapeColor { transparent, black, white, red, yellow, green, blue, random1, random2, random3, random4 }
+
+extension ShapeColorExt on ShapeColor {
+  static const _colorSounds = [Sound.none, Sound.none, Sound.none, Sound.piros, Sound.sarga, Sound.zold, Sound.kek];
+  static const _colorValues = [
     Colors.transparent,
-    Colors.cyan,
+    Colors.black,
+    Colors.white,
     Colors.red,
     Colors.yellow,
     Colors.green,
-    Colors.blue,
-    Colors.black,
-    Colors.white,
+    Colors.blue
   ];
 
-  static const List<String> _colorNames = ["transparent", "random", "red", "yellow", "green", "blue", "black", "white"];
+  // trick: select randomly the r,y,g or b index if we address above the list size  (3 is the position of red in _colorValues)
+  int _shapeColorToIndex() => index < _colorValues.length ? index : 3 + (index + AppState.colorRandom) % 4;
 
+  Sound get sound => _colorSounds[_shapeColorToIndex()];
+  Color get color => _colorValues[_shapeColorToIndex()];
+  String get name => toString().replaceFirst('ShapeColor.', '');
+}
+
+class TargetConfig {
   int consequence; // the result of action? 0-failure, 1-neutral, 2-success
   double size;
-  int colorIndex;
   int cueScale; // 0 - 50%
   int cueAlpha; // 0 - 100 %
 
-  Color get color => colorIndex == 1 // on index 1, give back a random color from red,yellow,green,blue
-      ? _colors[_rng.nextInt(4) + 2]
-      : _colors[colorIndex];
-  String get colorName => _colorNames[colorIndex];
+  ShapeColor shapeColor;
 
   TargetConfig({
     this.consequence = 1,
     this.size = 0,
-    this.colorIndex = 0,
+    this.shapeColor = ShapeColor.transparent,
     this.cueScale = 0,
     this.cueAlpha = 95,
   });
@@ -60,8 +65,13 @@ class AppState extends ChangeNotifier {
   int successDelay = 2;
   int failureDelay = 4;
 
+  ShapeColor announcedColor = ShapeColor.transparent;
+
   Color backgroundColor = Colors.grey;
   int backgroundConsequence = kNeutral;
+
+  final Random _rng = Random();
+  static int colorRandom = 0; // a random integer for color randomization
 
   List<TargetConfig> targets = [
     TargetConfig(size: 100, cueScale: 30, consequence: kSuccess),
@@ -80,6 +90,11 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void randomize() {
+    targets.shuffle();
+    colorRandom = _rng.nextInt(1000);
+  }
+
   void executeConsequence(int consequence) {
     // disable input after a touch to prevent multiple touches and registering a
     // touch event behind a target. Input will be allowed after a timeout.
@@ -88,60 +103,80 @@ class AppState extends ChangeNotifier {
     if (consequence == kFailure) {
       failure++;
       _playSound(Sound.failure);
-      targets.shuffle();
+      randomize();
 
       if (failureDelay != 0) {
         // turn off play area for a while
         playAreaVisible = false;
         // wait a bit and then turn back the play area
-        Future.delayed(Duration(seconds: failureDelay), () {
-          playAreaVisible = true;
-          inputAllowed = true;
-          notifyListeners();
-        });
+        Future.delayed(Duration(seconds: failureDelay), _showPlayArea);
       }
     }
 
     if (consequence == kNeutral) {
       neutral++;
-      Future.delayed(Duration(milliseconds: 500), () {
-        inputAllowed = true;
-      });
+      Future.delayed(Duration(milliseconds: 500), _showPlayArea);
     }
 
     // success
     if (consequence == kSuccess) {
       success++;
       _playSound(Sound.success);
-      targets.shuffle();
+      randomize();
 
       if (successDelay != 0) {
         // turn off play area for a while
         playAreaVisible = false;
         // wait a bit and then turn back the play area
-        Future.delayed(Duration(seconds: successDelay), () {
-          playAreaVisible = true;
-          inputAllowed = true;
-          notifyListeners();
-        });
+        Future.delayed(Duration(seconds: successDelay), _showPlayArea);
       }
     }
 
     notifyListeners();
   }
+
+  void _showPlayArea() {
+    playAreaVisible = true;
+    inputAllowed = true;
+    _playSound(announcedColor.sound);
+    notifyListeners();
+  }
+
+  AppState() {
+    _initSound();
+  }
 }
 
 /// low latency sound engine
-enum Sound { failure, success }
-const _soundToFileName = {Sound.failure: "failure.wav", Sound.success: "success.wav"};
+enum Sound { none, failure, success, piros, kek, zold, sarga, egy, ketto, harom, kor, haromszog, negyszog }
+const _soundToFileName = {
+  Sound.failure: "failure.mp3",
+  Sound.success: "success.mp3",
+  Sound.piros: "piros.mp3",
+  Sound.kek: "kek.mp3",
+  Sound.zold: "zold.mp3",
+  Sound.sarga: "sarga.mp3",
+  Sound.egy: "egy.mp3",
+  Sound.ketto: "ketto.mp3",
+  Sound.harom: "harom.mp3",
+  Sound.kor: "kor.mp3",
+  Sound.haromszog: "haromszog.mp3",
+  Sound.negyszog: "negyszog.mp3",
+};
 
-var _soundPool = Soundpool();
+var _soundPool = Soundpool(streamType: StreamType.notification);
 var _soundToId = Map<Sound, int>();
 
-void _playSound(Sound sound) async {
+Future<void> _initSound() async {
+  for (var s in Sound.values)
+    if (s != Sound.none) _soundToId[s] = await _soundPool.load(await rootBundle.load("assets/${_soundToFileName[s]}"));
+}
+
+Future<int> _playSound(Sound sound) async {
+  if (sound == Sound.none) return 0;
+
   int soundId = _soundToId[sound] ?? await _soundPool.load(await rootBundle.load("assets/${_soundToFileName[sound]}"));
-  if (soundId >= 0) {
-    _soundToId[sound] = soundId;
-  }
-  _soundPool.play(soundId);
+  if (soundId >= 0) _soundToId[sound] = soundId;
+
+  return await _soundPool.play(soundId);
 }

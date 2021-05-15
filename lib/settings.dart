@@ -15,50 +15,66 @@ class SettingsPanel extends StatelessWidget {
       children: [
         SizedBox(
           height: 100,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+          child: Column(
             children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Slider(
+                    value: state.backgroundConsequence.toDouble(),
+                    activeColor: [Colors.red, Colors.orange, Colors.green][state.backgroundConsequence],
+                    min: 0,
+                    max: 2,
+                    divisions: 2,
+                    label: "background result: " + ["failure", "neutral", "success"][state.backgroundConsequence],
+                    onChanged: (double value) {
+                      state.backgroundConsequence = value.toInt();
+                      state.notify();
+                    },
+                  ),
+                  Slider(
+                    value: state.successDelay.toDouble(),
+                    min: 0,
+                    max: 5,
+                    divisions: 5,
+                    label: "success timeout: ${state.successDelay}s",
+                    onChanged: (double value) {
+                      state.successDelay = value.round();
+                      state.notify();
+                    },
+                  ),
+                  Slider(
+                    value: state.failureDelay.toDouble(),
+                    min: 0,
+                    max: 5,
+                    divisions: 5,
+                    label: "failure timeout: ${state.failureDelay}s",
+                    onChanged: (double value) {
+                      state.failureDelay = value.round();
+                      state.notify();
+                    },
+                  ),
+                  ElevatedButton(
+                      onPressed: () {
+                        state
+                          ..settingsPanelVisible = false
+                          ..notify();
+                      },
+                      child: Text("Ok")),
+                ],
+              ),
               Slider(
-                value: state.backgroundConsequence.toDouble(),
-                activeColor: [Colors.red, Colors.orange, Colors.green][state.backgroundConsequence],
+                value: state.announcedColor.index.toDouble(),
                 min: 0,
-                max: 2,
-                divisions: 2,
-                label: "background result: " + ["failure", "neutral", "success"][state.backgroundConsequence],
+                max: ShapeColor.values.length - 1,
+                divisions: ShapeColor.values.length - 1,
+                activeColor: state.announcedColor.color,
+                label: "announced color: ${state.announcedColor.name}",
                 onChanged: (double value) {
-                  state.backgroundConsequence = value.toInt();
+                  state.announcedColor = ShapeColor.values[value.round()];
                   state.notify();
                 },
               ),
-              Slider(
-                value: state.successDelay.toDouble(),
-                min: 0,
-                max: 5,
-                divisions: 5,
-                label: "success timeout: ${state.successDelay}s",
-                onChanged: (double value) {
-                  state.successDelay = value.round();
-                  state.notify();
-                },
-              ),
-              Slider(
-                value: state.failureDelay.toDouble(),
-                min: 0,
-                max: 5,
-                divisions: 5,
-                label: "failure timeout: ${state.failureDelay}s",
-                onChanged: (double value) {
-                  state.failureDelay = value.round();
-                  state.notify();
-                },
-              ),
-              ElevatedButton(
-                  onPressed: () {
-                    state
-                      ..settingsPanelVisible = false
-                      ..notify();
-                  },
-                  child: Text("Ok")),
             ],
           ),
         ),
@@ -66,27 +82,27 @@ class SettingsPanel extends StatelessWidget {
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SlotSettingCard(state, state.targets[0]),
-            SlotSettingCard(state, state.targets[1]),
-            SlotSettingCard(state, state.targets[2]),
+            TargetSettingCard(state, state.targets[0]),
+            TargetSettingCard(state, state.targets[1]),
+            TargetSettingCard(state, state.targets[2]),
           ],
         ),
         Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SlotSettingCard(state, state.targets[3]),
-            SlotSettingCard(state, state.targets[4]),
-            SlotSettingCard(state, state.targets[5]),
+            TargetSettingCard(state, state.targets[3]),
+            TargetSettingCard(state, state.targets[4]),
+            TargetSettingCard(state, state.targets[5]),
           ],
         ),
         Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SlotSettingCard(state, state.targets[6]),
-            SlotSettingCard(state, state.targets[7]),
-            SlotSettingCard(state, state.targets[8]),
+            TargetSettingCard(state, state.targets[6]),
+            TargetSettingCard(state, state.targets[7]),
+            TargetSettingCard(state, state.targets[8]),
           ],
         ),
       ],
@@ -94,10 +110,10 @@ class SettingsPanel extends StatelessWidget {
   }
 }
 
-class SlotSettingCard extends StatelessWidget {
+class TargetSettingCard extends StatelessWidget {
   final AppState state;
   final TargetConfig targetConfig;
-  const SlotSettingCard(this.state, this.targetConfig, {Key? key}) : super(key: key);
+  const TargetSettingCard(this.state, this.targetConfig, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -106,14 +122,14 @@ class SlotSettingCard extends StatelessWidget {
         child: Column(
           children: [
             Slider(
-              value: targetConfig.colorIndex.toDouble(),
+              value: targetConfig.shapeColor.index.toDouble(),
               min: 0,
-              max: 6,
-              divisions: 6,
-              activeColor: targetConfig.color,
-              label: "color: ${targetConfig.colorName}",
+              max: ShapeColor.values.length - 1,
+              divisions: ShapeColor.values.length - 1,
+              activeColor: targetConfig.shapeColor.color,
+              label: "color: ${targetConfig.shapeColor.name}",
               onChanged: (double value) {
-                targetConfig.colorIndex = value.round();
+                targetConfig.shapeColor = ShapeColor.values[value.round()];
                 state.notify();
               },
             ),
