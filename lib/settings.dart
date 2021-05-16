@@ -39,7 +39,7 @@ class SettingsPanel extends StatelessWidget {
                     divisions: 5,
                     label: "success timeout: ${state.successDelay}s",
                     onChanged: (double value) {
-                      state.successDelay = value.round();
+                      state.successDelay = value.toInt();
                       state.notify();
                     },
                   ),
@@ -50,7 +50,7 @@ class SettingsPanel extends StatelessWidget {
                     divisions: 5,
                     label: "failure timeout: ${state.failureDelay}s",
                     onChanged: (double value) {
-                      state.failureDelay = value.round();
+                      state.failureDelay = value.toInt();
                       state.notify();
                     },
                   ),
@@ -63,17 +63,34 @@ class SettingsPanel extends StatelessWidget {
                       child: Text("Ok")),
                 ],
               ),
-              Slider(
-                value: state.announcedColor.index.toDouble(),
-                min: 0,
-                max: ShapeColor.values.length - 1,
-                divisions: ShapeColor.values.length - 1,
-                activeColor: state.announcedColor.color,
-                label: "announced color: ${state.announcedColor.name}",
-                onChanged: (double value) {
-                  state.announcedColor = ShapeColor.values[value.round()];
-                  state.notify();
-                },
+              Row(
+                children: [
+                  Slider(
+                    value: state.targetSize.toDouble(),
+                    min: 0,
+                    max: 4,
+                    divisions: 4,
+                    label: "target size: ${state.targetSize}",
+                    onChanged: (double value) {
+                      state.targetSize = value.toInt();
+                      state.notify();
+                    },
+                  ),
+                  Expanded(
+                    child: Slider(
+                      value: state.announcedColor.index.toDouble(),
+                      min: 0,
+                      max: ShapeColor.values.length - 1,
+                      divisions: ShapeColor.values.length - 1,
+                      activeColor: state.announcedColor.color,
+                      label: "announced color: ${state.announcedColor.name}",
+                      onChanged: (double value) {
+                        state.announcedColor = ShapeColor.values[value.toInt()];
+                        state.notify();
+                      },
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -129,41 +146,30 @@ class TargetSettingCard extends StatelessWidget {
               activeColor: targetConfig.shapeColor.color,
               label: "color: ${targetConfig.shapeColor.name}",
               onChanged: (double value) {
-                targetConfig.shapeColor = ShapeColor.values[value.round()];
+                targetConfig.shapeColor = ShapeColor.values[value.toInt()];
                 state.notify();
               },
             ),
             Slider(
-              value: targetConfig.size,
+              value: targetConfig.shapeSize.toDouble(),
               min: 0,
-              max: 200,
-              divisions: 4,
-              label: "size: ${targetConfig.size.round()}",
-              onChanged: (double value) {
-                targetConfig.size = value;
-                state.notify();
-              },
-            ),
-            Slider(
-              value: targetConfig.cueScale.toDouble(),
-              min: 0,
-              max: 50,
+              max: 5,
               divisions: 5,
-              label: "cue scale: ${targetConfig.cueScale}%",
+              label: "size: ${targetConfig.shapeSize.round()}",
               onChanged: (double value) {
-                targetConfig.cueScale = value.toInt();
+                targetConfig.shapeSize = value.toInt();
                 state.notify();
               },
             ),
             Slider(
-              value: targetConfig.cueAlpha.toDouble(),
-              min: 5,
-              max: 95,
-              divisions: 9,
-              activeColor: Colors.blue.withAlpha(targetConfig.cueAlpha.toInt() * 2),
-              label: "cue alpha: ${targetConfig.cueAlpha.toInt()}%",
+              value: targetConfig.alpha.toDouble(),
+              min: 0,
+              max: 5,
+              divisions: 5,
+              activeColor: Colors.blue.withAlpha(alphaValues[targetConfig.alpha.toInt()]),
+              label: "target alpha: ${targetConfig.alpha.toInt()}",
               onChanged: (double value) {
-                targetConfig.cueAlpha = value.toInt();
+                targetConfig.alpha = value.toInt();
                 state.notify();
               },
             ),

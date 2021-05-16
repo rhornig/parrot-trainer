@@ -29,20 +29,20 @@ extension ShapeColorExt on ShapeColor {
   String get name => toString().replaceFirst('ShapeColor.', '');
 }
 
+const alphaValues = [0, 6, 16, 32, 64, 128];
+
 class TargetConfig {
   int consequence; // the result of action? 0-failure, 1-neutral, 2-success
-  double size;
-  int cueScale; // 0 - 50%
-  int cueAlpha; // 0 - 100 %
+  int shapeSize; // 0 - 5
+  int alpha;
 
   ShapeColor shapeColor;
 
   TargetConfig({
     this.consequence = 1,
-    this.size = 0,
+    this.shapeSize = 0,
     this.shapeColor = ShapeColor.transparent,
-    this.cueScale = 0,
-    this.cueAlpha = 95,
+    this.alpha = 0,
   });
 }
 
@@ -51,6 +51,9 @@ class AppState extends ChangeNotifier {
   static const int kFailure = 0;
   static const int kNeutral = 1;
   static const int kSuccess = 2;
+
+  final Random _rng = Random();
+  static int colorRandom = 0; // a random integer for color randomization
 
   bool inputAllowed = true;
   bool settingsPanelVisible = false;
@@ -61,10 +64,10 @@ class AppState extends ChangeNotifier {
   int neutral = 0;
   int failure = 0;
 
-  // timeouts after success or failure events
+  // play area timeouts after success or failure events
   int successDelay = 2;
   int failureDelay = 4;
-  // delay offset of announcement relative to the play area display (in secs, can be negative)
+  // delay offset of announcement relative to the displaying of play area (in secs, can be negative)
   int announcementDelayOffset = 0; // TODO make this configurable
 
   ShapeColor announcedColor = ShapeColor.transparent;
@@ -72,13 +75,12 @@ class AppState extends ChangeNotifier {
   Color backgroundColor = Colors.grey;
   int backgroundConsequence = kNeutral;
 
-  final Random _rng = Random();
-  static int colorRandom = 0; // a random integer for color randomization
+  int targetSize = 3; // 0-5
 
   List<TargetConfig> targets = [
-    TargetConfig(size: 100, cueScale: 30, shapeColor: ShapeColor.random1, consequence: kSuccess),
-    TargetConfig(size: 100, cueScale: 30, shapeColor: ShapeColor.random1, consequence: kSuccess),
-    TargetConfig(size: 100, cueScale: 30, shapeColor: ShapeColor.random1, consequence: kSuccess),
+    TargetConfig(alpha: 5, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: kSuccess),
+    TargetConfig(alpha: 5, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: kSuccess),
+    TargetConfig(alpha: 5, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: kSuccess),
     TargetConfig(),
     TargetConfig(),
     TargetConfig(),
@@ -118,7 +120,7 @@ class AppState extends ChangeNotifier {
         Future.delayed(Duration(seconds: failureDelay), _revealPlayArea);
         // and optionally announce a cue
         if (announcedColor != ShapeColor.transparent)
-          Future.delayed(Duration(seconds: failureDelay + announcementDelayOffset), _announceCue);
+          Future.delayed(Duration(seconds: failureDelay + announcementDelayOffset), _announceColor);
       }
     }
 
@@ -140,14 +142,14 @@ class AppState extends ChangeNotifier {
         Future.delayed(Duration(seconds: successDelay), _revealPlayArea);
         // and optionally announce a cue
         if (announcedColor != ShapeColor.transparent)
-          Future.delayed(Duration(seconds: successDelay + announcementDelayOffset), _announceCue);
+          Future.delayed(Duration(seconds: successDelay + announcementDelayOffset), _announceColor);
       }
     }
 
     notifyListeners();
   }
 
-  void _announceCue() {
+  void _announceColor() {
     // announce color cue
     _playSound(announcedColor.sound);
     // TODO announce other cues like shape, size, number

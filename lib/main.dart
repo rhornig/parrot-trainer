@@ -89,20 +89,24 @@ class TouchTarget extends StatelessWidget {
           if (state.inputAllowed) state.executeConsequence(target.consequence);
         },
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: target.size, maxHeight: target.size),
+          constraints: BoxConstraints(minWidth: target.shapeSize * 40, minHeight: target.shapeSize * 40),
           child: Container(
-            color: target.shapeColor.color,
-            child: Transform.scale(
-              scale: target.cueScale / 100.0,
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color:
-                      (target.shapeColor == ShapeColor.black ? Colors.white : Colors.black).withAlpha(target.cueAlpha),
-                ),
-              ),
-            ),
-          ),
+              color: target.shapeColor.color,
+              child: UnconstrainedBox(
+                child: target.alpha > 0
+                    ? SizedBox(
+                        width: state.targetSize * 10,
+                        height: state.targetSize * 10,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: (target.shapeColor == ShapeColor.black ? Colors.white : Colors.black)
+                                .withAlpha(alphaValues[target.alpha]),
+                          ),
+                        ),
+                      )
+                    : null,
+              )),
         ),
       ),
     );
