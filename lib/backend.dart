@@ -64,6 +64,8 @@ class AppState extends ChangeNotifier {
   // timeouts after success or failure events
   int successDelay = 2;
   int failureDelay = 4;
+  // delay offset of announcement relative to the play area display (in secs, can be negative)
+  int announcementDelayOffset = 0; // TODO make this configurable
 
   ShapeColor announcedColor = ShapeColor.transparent;
 
@@ -74,9 +76,9 @@ class AppState extends ChangeNotifier {
   static int colorRandom = 0; // a random integer for color randomization
 
   List<TargetConfig> targets = [
-    TargetConfig(size: 100, cueScale: 30, consequence: kSuccess),
-    TargetConfig(size: 100, cueScale: 30, consequence: kSuccess),
-    TargetConfig(),
+    TargetConfig(size: 100, cueScale: 30, shapeColor: ShapeColor.random1, consequence: kSuccess),
+    TargetConfig(size: 100, cueScale: 30, shapeColor: ShapeColor.random1, consequence: kSuccess),
+    TargetConfig(size: 100, cueScale: 30, shapeColor: ShapeColor.random1, consequence: kSuccess),
     TargetConfig(),
     TargetConfig(),
     TargetConfig(),
@@ -85,12 +87,15 @@ class AppState extends ChangeNotifier {
     TargetConfig(),
   ];
 
-  /// notify all widgets listening on state changes
-  void notify() {
-    notifyListeners();
+  AppState() {
+    _initSound();
   }
 
+  /// notify all widgets listening on state changes
+  void notify() => notifyListeners();
+
   void randomize() {
+    // TODO make this configurable
     targets.shuffle();
     colorRandom = _rng.nextInt(1000);
   }
@@ -98,6 +103,7 @@ class AppState extends ChangeNotifier {
   void executeConsequence(int consequence) {
     // disable input after a touch to prevent multiple touches and registering a
     // touch event behind a target. Input will be allowed after a timeout.
+    // touch events are first delivered to the topmost widgets
     inputAllowed = false;
 
     if (consequence == kFailure) {
@@ -109,13 +115,16 @@ class AppState extends ChangeNotifier {
         // turn off play area for a while
         playAreaVisible = false;
         // wait a bit and then turn back the play area
-        Future.delayed(Duration(seconds: failureDelay), _showPlayArea);
+        Future.delayed(Duration(seconds: failureDelay), _revealPlayArea);
+        // and optionally announce a cue
+        if (announcedColor != ShapeColor.transparent)
+          Future.delayed(Duration(seconds: failureDelay + announcementDelayOffset), _announceCue);
       }
     }
 
     if (consequence == kNeutral) {
       neutral++;
-      Future.delayed(Duration(milliseconds: 500), _showPlayArea);
+      Future.delayed(Duration(milliseconds: 500), _revealPlayArea);
     }
 
     // success
@@ -128,22 +137,27 @@ class AppState extends ChangeNotifier {
         // turn off play area for a while
         playAreaVisible = false;
         // wait a bit and then turn back the play area
-        Future.delayed(Duration(seconds: successDelay), _showPlayArea);
+        Future.delayed(Duration(seconds: successDelay), _revealPlayArea);
+        // and optionally announce a cue
+        if (announcedColor != ShapeColor.transparent)
+          Future.delayed(Duration(seconds: successDelay + announcementDelayOffset), _announceCue);
       }
     }
 
     notifyListeners();
   }
 
-  void _showPlayArea() {
-    playAreaVisible = true;
-    inputAllowed = true;
+  void _announceCue() {
+    // announce color cue
     _playSound(announcedColor.sound);
-    notifyListeners();
+    // TODO announce other cues like shape, size, number
   }
 
-  AppState() {
-    _initSound();
+  // show play area and re-enable inputs
+  void _revealPlayArea() {
+    playAreaVisible = true;
+    inputAllowed = true;
+    notifyListeners();
   }
 }
 
