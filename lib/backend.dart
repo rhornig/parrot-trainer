@@ -29,17 +29,28 @@ extension ShapeColorExt on ShapeColor {
   String get name => toString().replaceFirst('ShapeColor.', '');
 }
 
+enum Consequence { nrm, failure, neutral, success, reward }
+
+extension ConsequenceExt on Consequence {
+  static const _colorSounds = [Sound.nrm, Sound.none, Sound.none, Sound.none, Sound.reward];
+  static const _colorValues = [Colors.red, Colors.red, Colors.orange, Colors.lightGreen, Colors.green];
+
+  Sound get sound => _colorSounds[index];
+  Color get color => _colorValues[index];
+  String get name => toString().replaceFirst('Consequence.', '');
+}
+
 const alphaValues = [0, 6, 16, 32, 64, 128];
 
 class TargetConfig {
-  int consequence; // the result of action? 0-failure, 1-neutral, 2-success
+  Consequence consequence; // the result of action? 0-failure, 1-neutral, 2-success
   int shapeSize; // 0 - 5
   int alpha;
 
   ShapeColor shapeColor;
 
   TargetConfig({
-    this.consequence = 1,
+    this.consequence = Consequence.neutral,
     this.shapeSize = 0,
     this.shapeColor = ShapeColor.transparent,
     this.alpha = 0,
@@ -48,10 +59,6 @@ class TargetConfig {
 
 /// app state data model
 class AppState extends ChangeNotifier {
-  static const int kFailure = 0;
-  static const int kNeutral = 1;
-  static const int kSuccess = 2;
-
   final Random _rng = Random();
   static int colorRandom = 0; // a random integer for color randomization
 
@@ -60,27 +67,29 @@ class AppState extends ChangeNotifier {
   bool playAreaVisible = true;
 
   // statistics counters
+  int reward = 0;
   int success = 0;
   int neutral = 0;
   int failure = 0;
+  int noRewardMarker = 0;
 
   // play area timeouts after success or failure events
   int successDelay = 2;
   int failureDelay = 4;
   // delay offset of announcement relative to the displaying of play area (in secs, can be negative)
-  int announcementDelayOffset = 0; // TODO make this configurable
+  int announcementDelayOffset = 0;
 
   ShapeColor announcedColor = ShapeColor.transparent;
 
   Color backgroundColor = Colors.grey;
-  int backgroundConsequence = kNeutral;
+  Consequence backgroundConsequence = Consequence.neutral;
 
   int targetSize = 3; // 0-5
 
   List<TargetConfig> targets = [
-    TargetConfig(alpha: 5, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: kSuccess),
-    TargetConfig(alpha: 5, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: kSuccess),
-    TargetConfig(alpha: 5, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: kSuccess),
+    TargetConfig(alpha: 5, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
+    TargetConfig(alpha: 5, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
+    TargetConfig(alpha: 5, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
     TargetConfig(),
     TargetConfig(),
     TargetConfig(),
@@ -102,15 +111,19 @@ class AppState extends ChangeNotifier {
     colorRandom = _rng.nextInt(1000);
   }
 
-  void executeConsequence(int consequence) {
+  void executeConsequence(Consequence consequence) {
     // disable input after a touch to prevent multiple touches and registering a
     // touch event behind a target. Input will be allowed after a timeout.
     // touch events are first delivered to the topmost widgets
     inputAllowed = false;
 
-    if (consequence == kFailure) {
+    if (consequence == Consequence.nrm) {
+      _playSound(Sound.nrm);
+      noRewardMarker++;
+    }
+
+    if (consequence == Consequence.nrm || consequence == Consequence.failure) {
       failure++;
-      _playSound(Sound.failure);
       randomize();
 
       if (failureDelay != 0) {
@@ -124,15 +137,19 @@ class AppState extends ChangeNotifier {
       }
     }
 
-    if (consequence == kNeutral) {
+    if (consequence == Consequence.neutral) {
       neutral++;
       Future.delayed(Duration(milliseconds: 500), _revealPlayArea);
     }
 
+    if (consequence == Consequence.reward) {
+      _playSound(Sound.reward);
+      reward++;
+    }
+
     // success
-    if (consequence == kSuccess) {
+    if (consequence == Consequence.success || consequence == Consequence.reward) {
       success++;
-      _playSound(Sound.success);
       randomize();
 
       if (successDelay != 0) {
@@ -164,10 +181,10 @@ class AppState extends ChangeNotifier {
 }
 
 /// low latency sound engine
-enum Sound { none, failure, success, piros, kek, zold, sarga, egy, ketto, harom, kor, haromszog, negyszog }
+enum Sound { none, nrm, reward, piros, kek, zold, sarga, egy, ketto, harom, kor, haromszog, negyszog }
 const _soundToFileName = {
-  Sound.failure: "failure.mp3",
-  Sound.success: "success.mp3",
+  Sound.nrm: "failure.mp3",
+  Sound.reward: "success.mp3",
   Sound.piros: "piros.mp3",
   Sound.kek: "kek.mp3",
   Sound.zold: "zold.mp3",

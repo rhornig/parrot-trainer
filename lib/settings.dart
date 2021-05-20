@@ -80,14 +80,14 @@ class GlobalSettingCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Slider(
-                  value: state.backgroundConsequence.toDouble(),
-                  activeColor: [Colors.red, Colors.orange, Colors.green][state.backgroundConsequence],
+                  value: state.backgroundConsequence.index.toDouble(),
+                  activeColor: state.backgroundConsequence.color,
                   min: 0,
-                  max: 2,
-                  divisions: 2,
-                  label: "background result: " + ["failure", "neutral", "success"][state.backgroundConsequence],
+                  max: 4,
+                  divisions: 4,
+                  label: "background result: ${state.backgroundConsequence.name}",
                   onChanged: (double value) {
-                    state.backgroundConsequence = value.toInt();
+                    state.backgroundConsequence = Consequence.values[value.toInt()];
                     state.notify();
                   },
                 ),
@@ -187,14 +187,14 @@ class TargetSettingCard extends StatelessWidget {
         child: Column(
           children: [
             Slider(
-              value: targetConfig.consequence.toDouble(),
-              activeColor: [Colors.red, Colors.orange, Colors.green][targetConfig.consequence],
+              value: targetConfig.consequence.index.toDouble(),
+              activeColor: targetConfig.consequence.color,
               min: 0,
-              max: 2,
-              divisions: 2,
-              label: "result: " + ["failure", "neutral", "success"][targetConfig.consequence],
+              max: 4,
+              divisions: 4,
+              label: "result: ${targetConfig.consequence.name}",
               onChanged: (double value) {
-                targetConfig.consequence = value.toInt();
+                targetConfig.consequence = Consequence.values[value.toInt()];
                 state.notify();
               },
             ),
