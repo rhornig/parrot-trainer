@@ -67,6 +67,9 @@ class AppState extends ChangeNotifier {
   bool playAreaVisible = true;
 
   // statistics counters
+  double referenceMean = 0.5;
+  double get referenceStdDev =>
+      (success + failure) == 0 ? 0 : sqrt(referenceMean * (1 - referenceMean) / (success + failure));
   int reward = 0;
   int success = 0;
   int neutral = 0;
@@ -87,19 +90,31 @@ class AppState extends ChangeNotifier {
   int targetSize = 3; // 0-5
 
   List<TargetConfig> targets = [
-    TargetConfig(alpha: 5, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
-    TargetConfig(alpha: 5, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
-    TargetConfig(alpha: 5, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
-    TargetConfig(),
-    TargetConfig(),
-    TargetConfig(),
-    TargetConfig(),
-    TargetConfig(),
+    TargetConfig(alpha: 2, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
+    TargetConfig(alpha: 2, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
+    TargetConfig(alpha: 2, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
+    TargetConfig(alpha: 2, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
+    TargetConfig(alpha: 0, shapeSize: 2, shapeColor: ShapeColor.random2, consequence: Consequence.nrm),
+    TargetConfig(alpha: 0, shapeSize: 2, shapeColor: ShapeColor.random2, consequence: Consequence.nrm),
+    TargetConfig(alpha: 0, shapeSize: 2, shapeColor: ShapeColor.random2, consequence: Consequence.nrm),
+    TargetConfig(alpha: 0, shapeSize: 2, shapeColor: ShapeColor.random2, consequence: Consequence.nrm),
     TargetConfig(),
   ];
 
   AppState() {
     _initSound();
+    calculateReferenceMean();
+  }
+
+  // must be called whenever a target consequence have changed (i.e. after the Settings screen)
+  // recalculate expected probability of success in case of randomly choosing from the targets
+  void calculateReferenceMean() {
+    int s = 0, n = 0;
+    for (var t in targets) {
+      if (t.consequence != Consequence.neutral) n++;
+      if (t.consequence == Consequence.success || t.consequence == Consequence.reward) s++;
+    }
+    referenceMean = n == 0 ? 0 : s / n;
   }
 
   /// notify all widgets listening on state changes

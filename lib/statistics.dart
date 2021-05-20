@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -9,9 +11,17 @@ class StatisticsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double probability = 0, variance = 0;
     int sum = state.success + state.failure;
-    int successPct = (sum == 0) ? 0 : ((state.success / sum) * 100).round();
-    int failurePct = (sum == 0) ? 0 : ((state.failure / sum) * 100).round();
+    if (sum != 0) {
+      probability = state.success / sum;
+      variance = sqrt(probability * (1 - probability) / sum);
+    }
+    int referenceMeanPct = (state.referenceMean * 100).round();
+    int referenceConfidencePct = (state.referenceStdDev * 100).round();
+    int referenceConfidencePct2 = (state.referenceStdDev * 2 * 100).round();
+    int referenceConfidencePct3 = (state.referenceStdDev * 3 * 100).round();
+    int successPct = (probability * 100).round();
 
     return Expanded(
       child: Row(
@@ -27,7 +37,7 @@ class StatisticsPanel extends StatelessWidget {
                 ..notify();
             },
             child: Text(
-              "S${state.success} F${state.failure} ∑$sum + N${state.neutral}\nS$successPct% F$failurePct%",
+              "S${state.success}+F${state.failure}=∑$sum N${state.neutral}\nS$successPct% B$referenceMeanPct±(σ$referenceConfidencePct 2σ$referenceConfidencePct2 3σ$referenceConfidencePct3)%",
               style: TextStyle(color: Colors.grey.shade900, fontSize: 40),
               textAlign: TextAlign.end,
             ),

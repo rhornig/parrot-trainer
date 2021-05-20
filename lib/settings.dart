@@ -25,6 +25,7 @@ class SettingsPanel extends StatelessWidget {
                       onPressed: () {
                         state
                           ..settingsPanelVisible = false
+                          ..calculateReferenceMean() // recalculate as the Consequence settings might have changed
                           ..notify();
                       },
                       child: Text("Ok")),
