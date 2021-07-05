@@ -40,12 +40,12 @@ extension ConsequenceExt on Consequence {
   String get name => toString().replaceFirst('Consequence.', '');
 }
 
-const alphaValues = [0, 6, 16, 32, 64, 128];
+const alphaValues = [0, 6, 12, 18, 32, 96];
 
 class TargetConfig {
-  Consequence consequence; // the result of action? 0-failure, 1-neutral, 2-success
+  Consequence consequence;
   int shapeSize; // 0 - 5
-  int alpha;
+  int alpha; // 0 - 5
 
   ShapeColor shapeColor;
 
