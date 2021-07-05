@@ -42,6 +42,9 @@
       scriptTag.src = 'main.dart.js';
       scriptTag.type = 'application/javascript';
       document.body.append(scriptTag);
+      document.body.addEventListener('contextmenu', (evemt) => {
+         event.preventDefault();
+      });
     }
 
     if ('serviceWorker' in navigator) {
