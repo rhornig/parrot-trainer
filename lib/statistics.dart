@@ -39,6 +39,7 @@ class StatisticsPanel extends StatelessWidget {
                     ..failure = 0
                     ..neutral = 0
                     ..success = 0
+                    ..history = []
                     ..notify();
                 },
                 child: Text(
@@ -76,8 +77,8 @@ class ChartPainter extends CustomPainter {
     canvas
       ..save()
       ..translate(size.width, size.height)
-      ..scale(size.width / 600.0, -size.height)
-      ..clipRect(Rect.fromLTRB(-600, 1, 0, 0));
+      ..scale(size.width / 600.0, -(size.height - 1))
+      ..clipRect(Rect.fromLTRB(-600, 1.01, 0, -0.01));
 
     // 1 minute time divs
     for (double t = 0; t > -600; t -= 60) canvas.drawLine(Offset(t, 0), Offset(t, 1), paint);
@@ -87,11 +88,11 @@ class ChartPainter extends CustomPainter {
       ..drawLine(Offset(-600, 0.5), Offset(0, 0.5), paint)
       ..drawLine(Offset(-600, 0.75), Offset(0, 0.75), paint);
 
-    paint.color = Colors.white.withAlpha(16);
+    paint.color = Colors.white.withAlpha(10);
     canvas
-      ..drawLine(refStart, refEnd, paint..strokeWidth = state.referenceStdDev * 3)
+      ..drawLine(refStart, refEnd, paint..strokeWidth = state.referenceStdDev * 3 * 2)
+      ..drawLine(refStart, refEnd, paint..strokeWidth = state.referenceStdDev * 2 * 2)
       ..drawLine(refStart, refEnd, paint..strokeWidth = state.referenceStdDev * 2)
-      ..drawLine(refStart, refEnd, paint..strokeWidth = state.referenceStdDev)
       ..drawLine(refStart, refEnd, paint..strokeWidth = 0);
 
     final incPaint = Paint()..color = Colors.green.withAlpha(128);
