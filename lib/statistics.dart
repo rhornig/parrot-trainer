@@ -38,7 +38,7 @@ class StatisticsPanel extends StatelessWidget {
             },
             child: Text(
               "S${state.success}+F${state.failure}=∑$sum N${state.neutral}\nS$successPct% B$referenceMeanPct±(σ$referenceConfidencePct 2σ$referenceConfidencePct2 3σ$referenceConfidencePct3)%",
-              style: TextStyle(color: Colors.grey.shade900, fontSize: 40),
+              style: TextStyle(color: Colors.grey.shade800, fontSize: 40),
               textAlign: TextAlign.end,
             ),
           ),
@@ -48,7 +48,7 @@ class StatisticsPanel extends StatelessWidget {
                 ..settingsPanelVisible = true
                 ..notify();
             },
-            child: Icon(Icons.settings, size: 80, color: Colors.grey.shade900),
+            child: Icon(Icons.settings, size: 80, color: Colors.grey.shade800),
           ),
         ],
       ),
