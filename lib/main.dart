@@ -7,7 +7,7 @@ import 'backend.dart';
 import 'settings.dart';
 import 'statistics.dart';
 
-// TODO baybe https://riverpod.dev/ would be a better state management solution?
+// TODO maybe https://riverpod.dev/ would be a better state management solution?
 // https://pub.dev/packages/get is also interesting
 
 void main() {
