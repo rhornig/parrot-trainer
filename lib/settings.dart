@@ -106,6 +106,19 @@ class GlobalSettingCard extends StatelessWidget {
                   },
                 ),
               ),
+              Expanded(
+                child: Slider(
+                  value: state.positionNoise.toDouble(),
+                  min: 0,
+                  max: 5,
+                  divisions: 5,
+                  label: "position noise: ${state.positionNoise}",
+                  onChanged: (double value) {
+                    state.positionNoise = value.toInt();
+                    state.notify();
+                  },
+                ),
+              ),
             ],
           ),
           Row(

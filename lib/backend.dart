@@ -22,7 +22,7 @@ extension ShapeColorExt on ShapeColor {
   ];
 
   // trick: select randomly the r,y,g or b index if we address above the list size  (3 is the position of red in _colorValues)
-  int _shapeColorToIndex() => index < _colorValues.length ? index : 3 + (index + AppState.colorRandom) % 4;
+  int _shapeColorToIndex() => index < _colorValues.length ? index : 3 + (index + AppState.randomSeed) % 4;
 
   Sound get sound => _colorSounds[_shapeColorToIndex()];
   Color get color => _colorValues[_shapeColorToIndex()];
@@ -60,7 +60,7 @@ class TargetConfig {
 /// app state data model
 class AppState extends ChangeNotifier {
   final Random _rng = Random();
-  static int colorRandom = 0; // a random integer for color randomization
+  static int randomSeed = 0; // a random integer for color randomization
 
   bool inputAllowed = true;
   bool settingsPanelVisible = false;
@@ -88,6 +88,7 @@ class AppState extends ChangeNotifier {
   Consequence backgroundConsequence = Consequence.neutral;
 
   int targetSize = 3; // 0-5
+  int positionNoise = 0; // 0-5
 
   List<TargetConfig> targets = [
     TargetConfig(alpha: 2, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
@@ -123,7 +124,7 @@ class AppState extends ChangeNotifier {
   void randomize() {
     // TODO make this configurable
     targets.shuffle();
-    colorRandom = _rng.nextInt(1000);
+    randomSeed = _rng.nextInt(1000);
   }
 
   void executeConsequence(Consequence consequence) {
