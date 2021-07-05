@@ -92,13 +92,13 @@ class AppState extends ChangeNotifier {
   List<TargetConfig> targets = [
     TargetConfig(alpha: 2, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
     TargetConfig(alpha: 2, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
-    TargetConfig(alpha: 2, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
-    TargetConfig(alpha: 2, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
-    TargetConfig(alpha: 0, shapeSize: 2, shapeColor: ShapeColor.random2, consequence: Consequence.nrm),
-    TargetConfig(alpha: 0, shapeSize: 2, shapeColor: ShapeColor.random2, consequence: Consequence.nrm),
     TargetConfig(alpha: 0, shapeSize: 2, shapeColor: ShapeColor.random2, consequence: Consequence.nrm),
     TargetConfig(alpha: 0, shapeSize: 2, shapeColor: ShapeColor.random2, consequence: Consequence.nrm),
     TargetConfig(),
+    TargetConfig(alpha: 0, shapeSize: 2, shapeColor: ShapeColor.random3, consequence: Consequence.nrm),
+    TargetConfig(alpha: 0, shapeSize: 2, shapeColor: ShapeColor.random3, consequence: Consequence.nrm),
+    TargetConfig(alpha: 0, shapeSize: 2, shapeColor: ShapeColor.random4, consequence: Consequence.nrm),
+    TargetConfig(alpha: 0, shapeSize: 2, shapeColor: ShapeColor.random4, consequence: Consequence.nrm),
   ];
 
   AppState() {
