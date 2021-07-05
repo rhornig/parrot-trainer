@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -75,6 +76,7 @@ class AppState extends ChangeNotifier {
   int neutral = 0;
   int failure = 0;
   int noRewardMarker = 0;
+  List<double> history = [];
 
   // play area timeouts after success or failure events
   int successDelay = 2;
@@ -105,6 +107,7 @@ class AppState extends ChangeNotifier {
   AppState() {
     _initSound();
     calculateReferenceMean();
+    Timer.periodic(Duration(seconds: 5), _updateHistory);
   }
 
   // must be called whenever a target consequence have changed (i.e. after the Settings screen)
@@ -116,6 +119,12 @@ class AppState extends ChangeNotifier {
       if (t.consequence == Consequence.success || t.consequence == Consequence.reward) s++;
     }
     referenceMean = n == 0 ? 0 : s / n;
+  }
+
+  void _updateHistory(Timer timer) {
+    if (history.length == 120) history.removeLast();
+    if (success + failure > 0) history.insert(0, success.toDouble() / (success + failure));
+    notify();
   }
 
   /// notify all widgets listening on state changes
