@@ -69,8 +69,7 @@ class AppState extends ChangeNotifier {
 
   // statistics counters
   double referenceMean = 0.5;
-  double get referenceStdDev =>
-      (success + failure) == 0 ? 0 : sqrt(referenceMean * (1 - referenceMean) / (success + failure));
+  double get referenceStdDev => (success + failure) == 0 ? 0 : sqrt(referenceMean * (1 - referenceMean) / (success + failure));
   int reward = 0;
   int success = 0;
   int neutral = 0;
@@ -91,6 +90,9 @@ class AppState extends ChangeNotifier {
 
   int targetSize = 3; // 0-5
   int positionNoise = 0; // 0-5
+  bool shuffleOnSuccess = true; // whether shuffle the targets on success
+  bool shuffleOnFailure = true; // whether shuffle the targets on failure
+  bool newTargetOnFailure = true; // whether choose a new random target color on failure
 
   List<TargetConfig> targets = [
     TargetConfig(alpha: 2, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
@@ -130,12 +132,6 @@ class AppState extends ChangeNotifier {
   /// notify all widgets listening on state changes
   void notify() => notifyListeners();
 
-  void randomize() {
-    // TODO make this configurable
-    targets.shuffle();
-    randomSeed = _rng.nextInt(1000);
-  }
-
   void executeConsequence(Consequence consequence) {
     // disable input after a touch to prevent multiple touches and registering a
     // touch event behind a target. Input will be allowed after a timeout.
@@ -149,7 +145,8 @@ class AppState extends ChangeNotifier {
 
     if (consequence == Consequence.nrm || consequence == Consequence.failure) {
       failure++;
-      randomize();
+      if (shuffleOnFailure) targets.shuffle();
+      if (newTargetOnFailure) randomSeed = _rng.nextInt(1000);
 
       if (failureDelay != 0) {
         // turn off play area for a while
@@ -175,7 +172,8 @@ class AppState extends ChangeNotifier {
     // success
     if (consequence == Consequence.success || consequence == Consequence.reward) {
       success++;
-      randomize();
+      if (shuffleOnSuccess) targets.shuffle();
+      randomSeed = _rng.nextInt(1000);
 
       if (successDelay != 0) {
         // turn off play area for a while

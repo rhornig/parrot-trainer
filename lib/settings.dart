@@ -80,6 +80,52 @@ class GlobalSettingCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: state.shuffleOnSuccess,
+                      onChanged: (bool? value) {
+                        state.shuffleOnSuccess = value ?? true;
+                        state.notify();
+                      },
+                    ),
+                    Text("Shuffle on success")
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: state.shuffleOnFailure,
+                      onChanged: (bool? value) {
+                        state.shuffleOnFailure = value ?? true;
+                        state.notify();
+                      },
+                    ),
+                    Text("Shuffle on failure")
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: state.newTargetOnFailure,
+                      onChanged: (bool? value) {
+                        state.newTargetOnFailure = value ?? true;
+                        state.notify();
+                      },
+                    ),
+                    Text("New target on failure")
+                  ],
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Expanded(
                 child: Slider(
                   value: state.backgroundConsequence.index.toDouble(),
                   activeColor: state.backgroundConsequence.color,

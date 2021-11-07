@@ -32,7 +32,13 @@ class _ParrotTrainerAppState extends State<ParrotTrainerApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(canvasColor: Colors.black, cardColor: Colors.grey.shade900),
+      theme: ThemeData(
+          brightness: Brightness.dark,
+          cardColor: Colors.grey.shade900,
+          checkboxTheme: CheckboxThemeData(
+            checkColor: MaterialStateColor.resolveWith((states) => Colors.grey.shade900),
+            fillColor: MaterialStateColor.resolveWith((states) => Colors.grey.shade200),
+          )),
       home: Scaffold(
         body: SafeArea(
           child: Consumer<AppState>(builder: (context, state, child) {
