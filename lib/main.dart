@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
@@ -17,10 +18,15 @@ void main() {
   // debugPaintSizeEnabled = true;
   // debugPaintLayerBordersEnabled = true;
 
-  runApp(ChangeNotifierProvider(
-    create: (context) => AppState(),
-    child: ParrotTrainerApp(),
-  ));
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // We setup preferred orientations and only after it finished we run our app
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then(
+    (value) => runApp(ChangeNotifierProvider(
+      create: (context) => AppState(),
+      child: ParrotTrainerApp(),
+    )),
+  );
 }
 
 class ParrotTrainerApp extends StatefulWidget {
