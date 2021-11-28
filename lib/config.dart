@@ -1,12 +1,17 @@
 // symbolic shape colors. Random colors must be at the end and they start with random1
+
+import 'package:dart_json_mapper/dart_json_mapper.dart' show JsonMapper, jsonSerializable, JsonProperty, enumConverterNumeric;
 import 'package:flutter/material.dart';
 
+@jsonSerializable
 enum ShapeColor { transparent, black, white, red, yellow, green, blue, random1, random2, random3, random4 }
 
+@jsonSerializable
 enum Consequence { nrm, failure, neutral, success, reward }
 
 const alphaValues = [0, 6, 12, 18, 32, 96];
 
+@jsonSerializable
 class TargetConfig extends ChangeNotifier {
   late Consequence _consequence;
   Consequence get consequence => _consequence;
@@ -44,6 +49,7 @@ class TargetConfig extends ChangeNotifier {
   }
 }
 
+@jsonSerializable
 class SceneConfig extends ChangeNotifier {
   List<TargetConfig> targets = [
     TargetConfig(shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),

@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'backend.dart';
 import 'config.dart';
 import 'config_ui.dart';
+import 'main.mapper.g.dart' show initializeJsonMapper;
 import 'statistics.dart';
 
 // TODO maybe https://riverpod.dev/ would be a better state management solution?
@@ -18,7 +19,7 @@ void main() {
   // debugPaintPointersEnabled = true;
   // debugPaintSizeEnabled = true;
   // debugPaintLayerBordersEnabled = true;
-
+  initializeJsonMapper();
   WidgetsFlutterBinding.ensureInitialized();
 
   // We setup preferred orientations and only after it finished we run our app
