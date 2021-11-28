@@ -5,13 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:soundpool/soundpool.dart';
 
+import 'config.dart';
+
 /// data classes
 
-// symbolic shape colors. Random colors must be at the end and they start with random1
-enum ShapeColor { transparent, black, white, red, yellow, green, blue, random1, random2, random3, random4 }
-
 extension ShapeColorExt on ShapeColor {
-  static const _colorSounds = [Sound.none, Sound.none, Sound.none, Sound.piros, Sound.sarga, Sound.zold, Sound.kek];
+  static const _colorSounds = [Sound.none, Sound.none, Sound.none, Sound.red, Sound.yellow, Sound.green, Sound.blue];
   static const _colorValues = [
     Colors.transparent,
     Colors.black,
@@ -30,8 +29,6 @@ extension ShapeColorExt on ShapeColor {
   String get name => toString().replaceFirst('ShapeColor.', '');
 }
 
-enum Consequence { nrm, failure, neutral, success, reward }
-
 extension ConsequenceExt on Consequence {
   static const _colorSounds = [Sound.nrm, Sound.none, Sound.none, Sound.none, Sound.reward];
   static const _colorValues = [Colors.red, Colors.red, Colors.orange, Colors.lightGreen, Colors.green];
@@ -39,23 +36,6 @@ extension ConsequenceExt on Consequence {
   Sound get sound => _colorSounds[index];
   Color get color => _colorValues[index];
   String get name => toString().replaceFirst('Consequence.', '');
-}
-
-const alphaValues = [0, 6, 12, 18, 32, 96];
-
-class TargetConfig {
-  Consequence consequence;
-  int shapeSize; // 0 - 5
-  int alpha; // 0 - 5
-
-  ShapeColor shapeColor;
-
-  TargetConfig({
-    this.consequence = Consequence.neutral,
-    this.shapeSize = 0,
-    this.shapeColor = ShapeColor.transparent,
-    this.alpha = 0,
-  });
 }
 
 /// app state data model
@@ -77,34 +57,8 @@ class AppState extends ChangeNotifier {
   int noRewardMarker = 0;
   List<double> history = [];
 
-  // play area timeouts after success or failure events
-  int successDelay = 2;
-  int failureDelay = 4;
-  // delay offset of announcement relative to the displaying of play area (in secs, can be negative)
-  int announcementDelayOffset = 0;
-
-  ShapeColor announcedColor = ShapeColor.transparent;
-
-  Color backgroundColor = Colors.grey;
-  Consequence backgroundConsequence = Consequence.neutral;
-
-  int targetSize = 3; // 0-5
-  int positionNoise = 0; // 0-5
-  bool shuffleOnSuccess = true; // whether shuffle the targets on success
-  bool shuffleOnFailure = true; // whether shuffle the targets on failure
-  bool newTargetOnFailure = true; // whether choose a new random target color on failure
-
-  List<TargetConfig> targets = [
-    TargetConfig(alpha: 2, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
-    TargetConfig(alpha: 2, shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
-    TargetConfig(alpha: 0, shapeSize: 2, shapeColor: ShapeColor.random2, consequence: Consequence.nrm),
-    TargetConfig(alpha: 0, shapeSize: 2, shapeColor: ShapeColor.random2, consequence: Consequence.nrm),
-    TargetConfig(),
-    TargetConfig(alpha: 0, shapeSize: 2, shapeColor: ShapeColor.random3, consequence: Consequence.nrm),
-    TargetConfig(alpha: 0, shapeSize: 2, shapeColor: ShapeColor.random3, consequence: Consequence.nrm),
-    TargetConfig(alpha: 0, shapeSize: 2, shapeColor: ShapeColor.random4, consequence: Consequence.nrm),
-    TargetConfig(alpha: 0, shapeSize: 2, shapeColor: ShapeColor.random4, consequence: Consequence.nrm),
-  ];
+  // user configured settings
+  SceneConfig scene = SceneConfig();
 
   AppState() {
     _initSound();
@@ -116,7 +70,7 @@ class AppState extends ChangeNotifier {
   // recalculate expected probability of success in case of randomly choosing from the targets
   void calculateReferenceMean() {
     int s = 0, n = 0;
-    for (var t in targets) {
+    for (var t in scene.targets) {
       if (t.consequence != Consequence.neutral) n++;
       if (t.consequence == Consequence.success || t.consequence == Consequence.reward) s++;
     }
@@ -126,7 +80,7 @@ class AppState extends ChangeNotifier {
   void _updateHistory(Timer timer) {
     if (history.length == 120) history.removeLast();
     if (success + failure > 0) history.insert(0, success.toDouble() / (success + failure));
-    notify();
+    notifyListeners();
   }
 
   /// notify all widgets listening on state changes
@@ -145,17 +99,17 @@ class AppState extends ChangeNotifier {
 
     if (consequence == Consequence.nrm || consequence == Consequence.failure) {
       failure++;
-      if (shuffleOnFailure) targets.shuffle();
-      if (newTargetOnFailure) randomSeed = _rng.nextInt(1000);
+      if (scene.shuffleOnFailure) scene.targets.shuffle();
+      if (scene.newTargetOnFailure) randomSeed = _rng.nextInt(1000);
 
-      if (failureDelay != 0) {
+      if (scene.failureDelay != 0) {
         // turn off play area for a while
         playAreaVisible = false;
         // wait a bit and then turn back the play area
-        Future.delayed(Duration(seconds: failureDelay), _revealPlayArea);
+        Future.delayed(Duration(seconds: scene.failureDelay), _revealPlayArea);
         // and optionally announce a cue
-        if (announcedColor != ShapeColor.transparent)
-          Future.delayed(Duration(seconds: failureDelay + announcementDelayOffset), _announceColor);
+        if (scene.announcedColor != ShapeColor.transparent)
+          Future.delayed(Duration(seconds: scene.failureDelay + scene.announcementDelayOffset), _announceColor);
       }
     }
 
@@ -172,17 +126,17 @@ class AppState extends ChangeNotifier {
     // success
     if (consequence == Consequence.success || consequence == Consequence.reward) {
       success++;
-      if (shuffleOnSuccess) targets.shuffle();
+      if (scene.shuffleOnSuccess) scene.targets.shuffle();
       randomSeed = _rng.nextInt(1000);
 
-      if (successDelay != 0) {
+      if (scene.successDelay != 0) {
         // turn off play area for a while
         playAreaVisible = false;
         // wait a bit and then turn back the play area
-        Future.delayed(Duration(seconds: successDelay), _revealPlayArea);
+        Future.delayed(Duration(seconds: scene.successDelay), _revealPlayArea);
         // and optionally announce a cue
-        if (announcedColor != ShapeColor.transparent)
-          Future.delayed(Duration(seconds: successDelay + announcementDelayOffset), _announceColor);
+        if (scene.announcedColor != ShapeColor.transparent)
+          Future.delayed(Duration(seconds: scene.successDelay + scene.announcementDelayOffset), _announceColor);
       }
     }
 
@@ -191,7 +145,7 @@ class AppState extends ChangeNotifier {
 
   void _announceColor() {
     // announce color cue
-    _playSound(announcedColor.sound);
+    _playSound(scene.announcedColor.sound);
     // TODO announce other cues like shape, size, number
   }
 
@@ -204,20 +158,20 @@ class AppState extends ChangeNotifier {
 }
 
 /// low latency sound engine
-enum Sound { none, nrm, reward, piros, kek, zold, sarga, egy, ketto, harom, kor, haromszog, negyszog }
+enum Sound { none, nrm, reward, red, blue, green, yellow, one, two, three, circle, triangle, square }
 const _soundToFileName = {
   Sound.nrm: "failure.mp3",
   Sound.reward: "success.mp3",
-  Sound.piros: "piros.mp3",
-  Sound.kek: "kek.mp3",
-  Sound.zold: "zold.mp3",
-  Sound.sarga: "sarga.mp3",
-  Sound.egy: "egy.mp3",
-  Sound.ketto: "ketto.mp3",
-  Sound.harom: "harom.mp3",
-  Sound.kor: "kor.mp3",
-  Sound.haromszog: "haromszog.mp3",
-  Sound.negyszog: "negyszog.mp3",
+  Sound.red: "piros.mp3",
+  Sound.blue: "kek.mp3",
+  Sound.green: "zold.mp3",
+  Sound.yellow: "sarga.mp3",
+  Sound.one: "egy.mp3",
+  Sound.two: "ketto.mp3",
+  Sound.three: "harom.mp3",
+  Sound.circle: "kor.mp3",
+  Sound.triangle: "haromszog.mp3",
+  Sound.square: "negyszog.mp3",
 };
 
 var _soundPool = Soundpool(streamType: StreamType.notification);
