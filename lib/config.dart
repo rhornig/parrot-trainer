@@ -52,6 +52,8 @@ class TargetConfig extends ChangeNotifier {
 
 @jsonSerializable
 class SceneConfig extends ChangeNotifier {
+  SceneConfig(String name) : _name = name;
+
   List<TargetConfig> targets = [
     TargetConfig(shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
     TargetConfig(shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
@@ -65,7 +67,7 @@ class SceneConfig extends ChangeNotifier {
   ];
 
   // config name
-  String _name = "Unnamed";
+  String _name;
   String get name => _name;
   set name(String value) {
     _name = value;
@@ -143,4 +145,11 @@ class SceneConfig extends ChangeNotifier {
     _newTargetOnFailure = value;
     notifyListeners();
   }
+}
+
+@jsonSerializable
+class SceneConfigList extends ChangeNotifier {
+  int index = 0;
+  List<SceneConfig> configs = [SceneConfig("green"), SceneConfig("yellow")];
+  get active => configs[index];
 }

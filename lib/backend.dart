@@ -62,7 +62,7 @@ class AppState extends ChangeNotifier {
   int successWindowSum = 0; // the number of successful consequences in the last 'successWindowSize'
 
   // user configured settings
-  SceneConfig scene = SceneConfig();
+  SceneConfigList scenes = SceneConfigList();
 
   AppState() {
     _initSound();
@@ -74,7 +74,7 @@ class AppState extends ChangeNotifier {
   // recalculate expected probability of success in case of randomly choosing from the targets
   void calculateReferenceMean() {
     int s = 0, n = 0;
-    for (var t in scene.targets) {
+    for (var t in scenes.active.targets) {
       if (t.consequence != Consequence.neutral) n++;
       if (t.consequence == Consequence.success || t.consequence == Consequence.reward) s++;
     }
@@ -111,17 +111,17 @@ class AppState extends ChangeNotifier {
     if (consequence == Consequence.nrm || consequence == Consequence.failure) {
       _updateSuccessWindow(0);
       failure++;
-      if (scene.shuffleOnFailure) scene.targets.shuffle();
-      if (scene.newTargetOnFailure) randomSeed = _rng.nextInt(1000);
+      if (scenes.active.shuffleOnFailure) scenes.active.targets.shuffle();
+      if (scenes.active.newTargetOnFailure) randomSeed = _rng.nextInt(1000);
 
-      if (scene.failureDelay != 0) {
+      if (scenes.active.failureDelay != 0) {
         // turn off play area for a while
         playAreaVisible = false;
         // wait a bit and then turn back the play area
-        Future.delayed(Duration(seconds: scene.failureDelay), _revealPlayArea);
+        Future.delayed(Duration(seconds: scenes.active.failureDelay), _revealPlayArea);
         // and optionally announce a cue
-        if (scene.announcedColor != ShapeColor.transparent)
-          Future.delayed(Duration(seconds: scene.failureDelay + scene.announcementDelayOffset), _announceColor);
+        if (scenes.active.announcedColor != ShapeColor.transparent)
+          Future.delayed(Duration(seconds: scenes.active.failureDelay + scenes.active.announcementDelayOffset), _announceColor);
       }
     }
 
@@ -139,17 +139,17 @@ class AppState extends ChangeNotifier {
     if (consequence == Consequence.success || consequence == Consequence.reward) {
       _updateSuccessWindow(1);
       success++;
-      if (scene.shuffleOnSuccess) scene.targets.shuffle();
+      if (scenes.active.shuffleOnSuccess) scenes.active.targets.shuffle();
       randomSeed = _rng.nextInt(1000);
 
-      if (scene.successDelay != 0) {
+      if (scenes.active.successDelay != 0) {
         // turn off play area for a while
         playAreaVisible = false;
         // wait a bit and then turn back the play area
-        Future.delayed(Duration(seconds: scene.successDelay), _revealPlayArea);
+        Future.delayed(Duration(seconds: scenes.active.successDelay), _revealPlayArea);
         // and optionally announce a cue
-        if (scene.announcedColor != ShapeColor.transparent)
-          Future.delayed(Duration(seconds: scene.successDelay + scene.announcementDelayOffset), _announceColor);
+        if (scenes.active.announcedColor != ShapeColor.transparent)
+          Future.delayed(Duration(seconds: scenes.active.successDelay + scenes.active.announcementDelayOffset), _announceColor);
       }
     }
 
@@ -158,7 +158,7 @@ class AppState extends ChangeNotifier {
 
   void _announceColor() {
     // announce color cue
-    _playSound(scene.announcedColor.sound);
+    _playSound(scenes.active.announcedColor.sound);
     // TODO announce other cues like shape, size, number
   }
 
