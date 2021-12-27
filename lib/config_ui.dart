@@ -12,50 +12,61 @@ class MainConfigPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-        itemCount: state.config.scenes.length,
-        itemBuilder: (context, index) {
-          final item = state.config.scenes[index];
-          return Dismissible(
-              key: ObjectKey(item),
-              child: ListTile(
-                title: Container(
-                  height: 50,
-                  color: index == state.config.index ? Colors.lightBlue : Colors.white10,
-                  child: Center(child: Text(item.name)),
-                ),
-                onTap: () {
-                  state.config.index = index;
-                  onClose();
-                },
-              ),
-              direction: DismissDirection.horizontal,
-              onDismissed: (direction) {
-                if (direction == DismissDirection.startToEnd) {
-                  state.config.scenes.removeAt(index);
-                  state.config.notifyListeners();
-                }
-                if (direction == DismissDirection.endToStart) {}
-              },
-              confirmDismiss: (direction) async {
-                if (direction == DismissDirection.startToEnd && index != state.config.index) return true;
-                if (direction == DismissDirection.endToStart) {
-                  state.config.index = index;
-                  state.config.notifyListeners();
-                }
-                return false;
-              },
-              background: Container(
-                  color: Colors.red,
-                  padding: EdgeInsets.symmetric(horizontal: 20.0),
-                  alignment: Alignment.centerLeft,
-                  child: Icon(Icons.delete)),
-              secondaryBackground: Container(
-                  color: Colors.green,
-                  padding: EdgeInsets.symmetric(horizontal: 20.0),
-                  alignment: Alignment.centerRight,
-                  child: Icon(Icons.edit)));
-        });
+    return Consumer<AppState>(builder: (context, state, child) {
+      return state.sceneDetailsVisible
+          ? SceneConfigPanel(state.config.scene, onAccept: () {
+              state.sceneDetailsVisible = false;
+              state.notifyListeners();
+            })
+          : ListView.builder(
+              itemCount: state.config.scenes.length,
+              itemBuilder: (context, index) {
+                final item = state.config.scenes[index];
+                return Dismissible(
+                    key: ObjectKey(item),
+                    child: ListTile(
+                      title: Container(
+                        height: 50,
+                        color: index == state.config.index ? Colors.lightBlue : Colors.white10,
+                        child: Center(child: Text(item.name)),
+                      ),
+                      onTap: () {
+                        state.config.index = index;
+                        state.sceneDetailsVisible = false;
+                        onClose();
+                      },
+                    ),
+                    direction: DismissDirection.horizontal,
+                    onDismissed: (direction) {
+                      if (direction == DismissDirection.startToEnd) {
+                        state.config.scenes.removeAt(index);
+                        state.config.notifyListeners();
+                      }
+                      if (direction == DismissDirection.endToStart) {
+                        state.sceneDetailsVisible = true;
+                        state.notifyListeners();
+                      }
+                    },
+                    confirmDismiss: (direction) async {
+                      if (direction == DismissDirection.startToEnd && index != state.config.index) return true;
+                      if (direction == DismissDirection.endToStart) {
+                        state.config.index = index;
+                        return true;
+                      }
+                      return false;
+                    },
+                    background: Container(
+                        color: Colors.red,
+                        padding: EdgeInsets.symmetric(horizontal: 20.0),
+                        alignment: Alignment.centerLeft,
+                        child: Icon(Icons.delete)),
+                    secondaryBackground: Container(
+                        color: Colors.green,
+                        padding: EdgeInsets.symmetric(horizontal: 20.0),
+                        alignment: Alignment.centerRight,
+                        child: Icon(Icons.edit)));
+              });
+    });
   }
 }
 

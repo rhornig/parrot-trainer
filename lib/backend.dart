@@ -48,6 +48,7 @@ class AppState extends ChangeNotifier {
 
   bool inputAllowed = true;
   bool settingsPanelVisible = false;
+  bool sceneDetailsVisible = false;
   bool playAreaVisible = true;
 
   // statistics counters
