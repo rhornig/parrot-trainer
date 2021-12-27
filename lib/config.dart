@@ -13,7 +13,7 @@ enum Consequence { nrm, failure, neutral, success, reward }
 const alphaValues = [0, 6, 12, 18, 32, 96];
 
 @jsonSerializable
-class TargetConfig extends ChangeNotifier {
+class TargetConfig with ChangeNotifier {
   late Consequence _consequence;
   Consequence get consequence => _consequence;
   set consequence(Consequence value) {
@@ -65,7 +65,7 @@ const _c2shape = {
 };
 
 @jsonSerializable
-class SceneConfig extends ChangeNotifier {
+class SceneConfig with ChangeNotifier {
   SceneConfig(String name, {String? reward, String? nrm}) : _name = name {
     reward?.split('').forEach((ch) {
       if (targets.length >= 9) return;
@@ -163,7 +163,7 @@ class SceneConfig extends ChangeNotifier {
 }
 
 @jsonSerializable
-class MainConfig extends ChangeNotifier {
+class MainConfig with ChangeNotifier {
   int index = 0;
   List<SceneConfig> scenes = [
     SceneConfig("green - yellow", reward: 'gggg', nrm: 'yyyy'),

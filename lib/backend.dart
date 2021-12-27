@@ -39,7 +39,7 @@ extension ConsequenceExt on Consequence {
 }
 
 /// app state data model
-class AppState extends ChangeNotifier {
+class AppState with ChangeNotifier {
   // user configured settings
   MainConfig config = MainConfig();
 
