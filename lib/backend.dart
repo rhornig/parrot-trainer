@@ -62,7 +62,7 @@ class AppState extends ChangeNotifier {
   int successWindowSum = 0; // the number of successful consequences in the last 'successWindowSize'
 
   // user configured settings
-  SceneConfigList scenes = SceneConfigList();
+  MainConfig scenes = MainConfig();
 
   AppState() {
     _initSound();

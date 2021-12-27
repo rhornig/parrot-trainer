@@ -5,10 +5,64 @@ import 'package:provider/provider.dart';
 import 'backend.dart';
 import 'config.dart';
 
+class SceneConfigListPanel extends StatelessWidget {
+  final MainConfig sceneConfigList;
+  final VoidCallback onClose;
+  const SceneConfigListPanel(this.sceneConfigList, {required this.onClose, Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+        itemCount: sceneConfigList.configs.length,
+        itemBuilder: (context, index) {
+          final item = sceneConfigList.configs[index];
+          return Dismissible(
+              key: ObjectKey(item),
+              child: ListTile(
+                title: Container(
+                  height: 50,
+                  color: index == sceneConfigList.index ? Colors.lightBlue : Colors.white10,
+                  child: Center(child: Text(item.name)),
+                ),
+                onTap: () {
+                  sceneConfigList.index = index;
+                  onClose();
+                },
+              ),
+              direction: DismissDirection.horizontal,
+              onDismissed: (direction) {
+                if (direction == DismissDirection.startToEnd) {
+                  sceneConfigList.configs.removeAt(index);
+                  sceneConfigList.notifyListeners();
+                }
+                if (direction == DismissDirection.endToStart) {}
+              },
+              confirmDismiss: (direction) async {
+                if (direction == DismissDirection.startToEnd && index != sceneConfigList.index) return true;
+                if (direction == DismissDirection.endToStart) {
+                  sceneConfigList.index = index;
+                  sceneConfigList.notifyListeners();
+                }
+                return false;
+              },
+              background: Container(
+                  color: Colors.red,
+                  padding: EdgeInsets.symmetric(horizontal: 20.0),
+                  alignment: Alignment.centerLeft,
+                  child: Icon(Icons.delete)),
+              secondaryBackground: Container(
+                  color: Colors.green,
+                  padding: EdgeInsets.symmetric(horizontal: 20.0),
+                  alignment: Alignment.centerRight,
+                  child: Icon(Icons.edit)));
+        });
+  }
+}
+
 class SceneConfigPanel extends StatelessWidget {
   final SceneConfig scene;
-  final VoidCallback? onOk;
-  const SceneConfigPanel(this.scene, {required this.onOk, Key? key}) : super(key: key);
+  final VoidCallback onAccept;
+  const SceneConfigPanel(this.scene, {required this.onAccept, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +94,7 @@ class SceneConfigPanel extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: ElevatedButton(onPressed: onOk, child: Text("Ok")),
+                  child: ElevatedButton(onPressed: onAccept, child: Text("Ok")),
                 ),
               ),
             ],

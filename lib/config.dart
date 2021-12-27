@@ -50,21 +50,36 @@ class TargetConfig extends ChangeNotifier {
   }
 }
 
+const _c2shape = {
+  'r': ShapeColor.red,
+  'g': ShapeColor.green,
+  'b': ShapeColor.blue,
+  'y': ShapeColor.yellow,
+  'w': ShapeColor.white,
+  'l': ShapeColor.black,
+  't': ShapeColor.transparent,
+  '1': ShapeColor.random1,
+  '2': ShapeColor.random2,
+  '3': ShapeColor.random3,
+  '4': ShapeColor.random4
+};
+
 @jsonSerializable
 class SceneConfig extends ChangeNotifier {
-  SceneConfig(String name) : _name = name;
+  SceneConfig(String name, {String? reward, String? nrm}) : _name = name {
+    reward?.split('').forEach((ch) {
+      if (targets.length >= 9) return;
+      targets.add(TargetConfig(shapeSize: 2, shapeColor: _c2shape[ch], consequence: Consequence.reward));
+    });
+    nrm?.split('').forEach((ch) {
+      if (targets.length >= 9) return;
+      targets.add(TargetConfig(shapeSize: 2, shapeColor: _c2shape[ch], consequence: Consequence.nrm));
+    });
 
-  List<TargetConfig> targets = [
-    TargetConfig(shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
-    TargetConfig(shapeSize: 2, shapeColor: ShapeColor.random1, consequence: Consequence.reward),
-    TargetConfig(shapeSize: 2, shapeColor: ShapeColor.random2, consequence: Consequence.nrm),
-    TargetConfig(shapeSize: 2, shapeColor: ShapeColor.random2, consequence: Consequence.nrm),
-    TargetConfig(),
-    TargetConfig(shapeSize: 2, shapeColor: ShapeColor.random3, consequence: Consequence.nrm),
-    TargetConfig(shapeSize: 2, shapeColor: ShapeColor.random3, consequence: Consequence.nrm),
-    TargetConfig(shapeSize: 2, shapeColor: ShapeColor.random4, consequence: Consequence.nrm),
-    TargetConfig(shapeSize: 2, shapeColor: ShapeColor.random4, consequence: Consequence.nrm),
-  ];
+    while (targets.length < 9) targets.add(TargetConfig());
+  }
+
+  List<TargetConfig> targets = [];
 
   // config name
   String _name;
@@ -118,7 +133,7 @@ class SceneConfig extends ChangeNotifier {
     notifyListeners();
   }
 
-  int _positionNoise = 0; // 0-5
+  int _positionNoise = 5; // 0-5
   int get positionNoise => _positionNoise;
   set positionNoise(int value) {
     _positionNoise = value;
@@ -132,14 +147,14 @@ class SceneConfig extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool _shuffleOnFailure = true; // whether shuffle the targets on failure
+  bool _shuffleOnFailure = false; // whether shuffle the targets on failure
   bool get shuffleOnFailure => _shuffleOnFailure;
   set shuffleOnFailure(bool value) {
     _shuffleOnFailure = value;
     notifyListeners();
   }
 
-  bool _newTargetOnFailure = true; // whether choose a new random target color on failure
+  bool _newTargetOnFailure = false; // whether choose a new random target color on failure
   bool get newTargetOnFailure => _newTargetOnFailure;
   set newTargetOnFailure(bool value) {
     _newTargetOnFailure = value;
@@ -148,8 +163,26 @@ class SceneConfig extends ChangeNotifier {
 }
 
 @jsonSerializable
-class SceneConfigList extends ChangeNotifier {
+class MainConfig extends ChangeNotifier {
   int index = 0;
-  List<SceneConfig> configs = [SceneConfig("green"), SceneConfig("yellow")];
+  List<SceneConfig> configs = [
+    SceneConfig("green - yellow", reward: 'gggg', nrm: 'yyyy'),
+    SceneConfig("green - red", reward: 'gggg', nrm: 'rrrr'),
+    SceneConfig("green - blue", reward: 'gggg', nrm: 'bbbb'),
+    SceneConfig("green - other", reward: 'gggg', nrm: 'yrbyr'),
+    SceneConfig("yellow - green", reward: 'yyyy', nrm: 'gggg'),
+    SceneConfig("yellow - red", reward: 'yyyy', nrm: 'rrrr'),
+    SceneConfig("yellow - blue", reward: 'yyyy', nrm: 'bbbb'),
+    SceneConfig("yellow - other", reward: 'yyyy', nrm: 'grbgr'),
+    SceneConfig("red - yellow", reward: 'rrrr', nrm: 'yyyy'),
+    SceneConfig("red - blue", reward: 'rrrr', nrm: 'bbbb'),
+    SceneConfig("red - green", reward: 'rrrr', nrm: 'gggg'),
+    SceneConfig("red - other", reward: 'rrrr', nrm: 'ybgyb'),
+    SceneConfig("blue - yellow", reward: 'bbbb', nrm: 'yyyy'),
+    SceneConfig("blue - red", reward: 'bbbb', nrm: 'rrrr'),
+    SceneConfig("blue - green", reward: 'bbbb', nrm: 'gggg'),
+    SceneConfig("blue - other", reward: 'bbbb', nrm: 'yrgyr'),
+    SceneConfig("random 1:3", reward: '11', nrm: '223344'),
+  ];
   get active => configs[index];
 }

@@ -51,9 +51,9 @@ class _ParrotTrainerAppState extends State<ParrotTrainerApp> {
         body: SafeArea(
           child: Consumer<AppState>(builder: (context, state, child) {
             return state.settingsPanelVisible
-                ? SceneConfigPanel(
-                    state.scenes.active,
-                    onOk: () {
+                ? SceneConfigListPanel(
+                    state.scenes,
+                    onClose: () {
                       state
                         ..settingsPanelVisible = false
                         ..calculateReferenceMean() // recalculate as the Consequence settings might have changed
