@@ -1,7 +1,8 @@
 // symbolic shape colors. Random colors must be at the end and they start with random1
 
 import 'package:dart_json_mapper/dart_json_mapper.dart' show JsonMapper, jsonSerializable, JsonProperty, enumConverterNumeric;
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+//import 'package:flutter/material.dart';
 
 @jsonSerializable
 enum ShapeColor { transparent, black, white, red, yellow, green, blue, random1, random2, random3, random4 }
@@ -98,13 +99,6 @@ class SceneConfig extends ChangeNotifier {
   ShapeColor get announcedColor => _announcedColor;
   set announcedColor(ShapeColor value) {
     _announcedColor = value;
-    notifyListeners();
-  }
-
-  Color _backgroundColor = Colors.grey;
-  Color get backgroundColor => _backgroundColor;
-  set backgroundColor(Color value) {
-    _backgroundColor = value;
     notifyListeners();
   }
 

@@ -55,7 +55,11 @@ class AppState extends ChangeNotifier {
   int neutral = 0;
   int failure = 0;
   int noRewardMarker = 0;
-  List<double> history = [];
+  List<double> successRateHistory = [];
+  static const successWindowSize = 20;
+  List<int> successWindow =
+      List<int>.filled(successWindowSize, 0, growable: true); // history of the latest 20 events ( 1 = success, 0 = failure)
+  int successWindowSum = 0; // the number of successful consequences in the last 'successWindowSize'
 
   // user configured settings
   SceneConfig scene = SceneConfig();
@@ -63,7 +67,7 @@ class AppState extends ChangeNotifier {
   AppState() {
     _initSound();
     calculateReferenceMean();
-    Timer.periodic(Duration(seconds: 5), _updateHistory);
+    Timer.periodic(Duration(seconds: 5), _updateSuccessRateHistory);
   }
 
   // must be called whenever a target consequence have changed (i.e. after the Settings screen)
@@ -77,14 +81,21 @@ class AppState extends ChangeNotifier {
     referenceMean = n == 0 ? 0 : s / n;
   }
 
-  void _updateHistory(Timer timer) {
-    if (history.length == 120) history.removeLast();
-    if (success + failure > 0) history.insert(0, success.toDouble() / (success + failure));
+  void _updateSuccessRateHistory(Timer timer) {
+    if (successRateHistory.length == 120) successRateHistory.removeLast();
+    if (success + failure > 0) successRateHistory.insert(0, success.toDouble() / (success + failure));
     notifyListeners();
   }
 
   /// notify all widgets listening on state changes
   void notify() => notifyListeners();
+
+  // pass 0 for failure and 1 for success. Stores the passed value in a FIFO of size 'successWindowSize'
+  void _updateSuccessWindow(int e) {
+    if (successWindow.length == successWindowSize) successWindowSum -= successWindow.removeLast();
+    successWindow.insert(0, e);
+    successWindowSum += e;
+  }
 
   void executeConsequence(Consequence consequence) {
     // disable input after a touch to prevent multiple touches and registering a
@@ -98,6 +109,7 @@ class AppState extends ChangeNotifier {
     }
 
     if (consequence == Consequence.nrm || consequence == Consequence.failure) {
+      _updateSuccessWindow(0);
       failure++;
       if (scene.shuffleOnFailure) scene.targets.shuffle();
       if (scene.newTargetOnFailure) randomSeed = _rng.nextInt(1000);
@@ -125,6 +137,7 @@ class AppState extends ChangeNotifier {
 
     // success
     if (consequence == Consequence.success || consequence == Consequence.reward) {
+      _updateSuccessWindow(1);
       success++;
       if (scene.shuffleOnSuccess) scene.targets.shuffle();
       randomSeed = _rng.nextInt(1000);

@@ -22,13 +22,14 @@ class StatisticsPanel extends StatelessWidget {
     int referenceConfidencePct2 = (state.referenceStdDev * 2 * 100).round();
     int referenceConfidencePct3 = (state.referenceStdDev * 3 * 100).round();
     int successPct = (probability * 100).round();
+    int successWindowPct = (state.successWindowSum * 100 / AppState.successWindowSize).round();
 
     return Expanded(
       child: Column(
         children: [
           Expanded(
-              child: Container(
-                  color: Colors.grey.shade900, child: CustomPaint(size: Size.infinite, painter: ChartPainter(state)))),
+              child:
+                  Container(color: Colors.grey.shade900, child: CustomPaint(size: Size.infinite, painter: ChartPainter(state)))),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -39,11 +40,13 @@ class StatisticsPanel extends StatelessWidget {
                     ..failure = 0
                     ..neutral = 0
                     ..success = 0
-                    ..history = []
+                    ..successRateHistory = []
+                    ..successWindow = List<int>.filled(AppState.successWindowSize, 0, growable: true)
+                    ..successWindowSum = 0
                     ..notify();
                 },
                 child: Text(
-                  "S${state.success}+F${state.failure}=∑$sum N${state.neutral}\nS$successPct% B$referenceMeanPct±(σ$referenceConfidencePct 2σ$referenceConfidencePct2 3σ$referenceConfidencePct3)%",
+                  "L${AppState.successWindowSize}S$successWindowPct% S${state.success}+F${state.failure}=∑$sum N${state.neutral}\nS$successPct% vs. $referenceMeanPct±$referenceConfidencePct% (1σ)",
                   style: TextStyle(color: Colors.grey.shade800, fontSize: 40),
                   textAlign: TextAlign.end,
                 ),
@@ -98,9 +101,9 @@ class ChartPainter extends CustomPainter {
     final incPaint = Paint()..color = Colors.green.withAlpha(128);
     final decPaint = Paint()..color = Colors.red.withAlpha(128);
     final ncPaint = Paint()..color = Colors.yellow.withAlpha(128);
-    for (int i = 1; i < state.history.length; i++) {
-      final laterValue = state.history[i - 1];
-      final earlierValue = state.history[i];
+    for (int i = 1; i < state.successRateHistory.length; i++) {
+      final laterValue = state.successRateHistory[i - 1];
+      final earlierValue = state.successRateHistory[i];
       canvas.drawLine(
           Offset(-5.0 * (i - 1), laterValue),
           Offset(-5.0 * i, earlierValue),

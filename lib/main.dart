@@ -87,7 +87,7 @@ class PlayArea extends StatelessWidget {
       child: AspectRatio(
         aspectRatio: 1.0,
         child: Container(
-          color: state.scene.backgroundColor,
+          color: Colors.grey, // background color (TODO make configurable)
           child: state.playAreaVisible
               ? GridView.count(
                   physics: NeverScrollableScrollPhysics(), // to prevent scrolling
@@ -146,3 +146,5 @@ class TouchTarget extends StatelessWidget {
     );
   }
 }
+
+//print(JsonMapper.serialize(state.scene));
