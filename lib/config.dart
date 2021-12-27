@@ -1,9 +1,8 @@
-// symbolic shape colors. Random colors must be at the end and they start with random1
-
 import 'package:dart_json_mapper/dart_json_mapper.dart' show JsonMapper, jsonSerializable, JsonProperty, enumConverterNumeric;
 import 'package:flutter/foundation.dart';
 //import 'package:flutter/material.dart';
 
+// symbolic shape colors. Random colors must be at the end and they start with random1
 @jsonSerializable
 enum ShapeColor { transparent, black, white, red, yellow, green, blue, random1, random2, random3, random4 }
 
@@ -166,23 +165,23 @@ class SceneConfig with ChangeNotifier {
 class MainConfig with ChangeNotifier {
   int index = 0;
   List<SceneConfig> scenes = [
-    SceneConfig("green - yellow", reward: 'gggg', nrm: 'yyyy'),
-    SceneConfig("green - red", reward: 'gggg', nrm: 'rrrr'),
-    SceneConfig("green - blue", reward: 'gggg', nrm: 'bbbb'),
-    SceneConfig("green - other", reward: 'gggg', nrm: 'yrbyr'),
-    SceneConfig("yellow - green", reward: 'yyyy', nrm: 'gggg'),
-    SceneConfig("yellow - red", reward: 'yyyy', nrm: 'rrrr'),
-    SceneConfig("yellow - blue", reward: 'yyyy', nrm: 'bbbb'),
-    SceneConfig("yellow - other", reward: 'yyyy', nrm: 'grbgr'),
-    SceneConfig("red - yellow", reward: 'rrrr', nrm: 'yyyy'),
-    SceneConfig("red - blue", reward: 'rrrr', nrm: 'bbbb'),
-    SceneConfig("red - green", reward: 'rrrr', nrm: 'gggg'),
-    SceneConfig("red - other", reward: 'rrrr', nrm: 'ybgyb'),
-    SceneConfig("blue - yellow", reward: 'bbbb', nrm: 'yyyy'),
-    SceneConfig("blue - red", reward: 'bbbb', nrm: 'rrrr'),
-    SceneConfig("blue - green", reward: 'bbbb', nrm: 'gggg'),
-    SceneConfig("blue - other", reward: 'bbbb', nrm: 'yrgyr'),
-    SceneConfig("random 1:3", reward: '11', nrm: '223344'),
+    SceneConfig("green - yellow", reward: 'gggg', nrm: 'yyyy')..announcedColor = ShapeColor.green,
+    SceneConfig("green - red", reward: 'gggg', nrm: 'rrrr')..announcedColor = ShapeColor.green,
+    SceneConfig("green - blue", reward: 'gggg', nrm: 'bbbb')..announcedColor = ShapeColor.green,
+    SceneConfig("green - other", reward: 'gggg', nrm: 'yrbyr')..announcedColor = ShapeColor.green,
+    SceneConfig("yellow - green", reward: 'yyyy', nrm: 'gggg')..announcedColor = ShapeColor.yellow,
+    SceneConfig("yellow - red", reward: 'yyyy', nrm: 'rrrr')..announcedColor = ShapeColor.yellow,
+    SceneConfig("yellow - blue", reward: 'yyyy', nrm: 'bbbb')..announcedColor = ShapeColor.yellow,
+    SceneConfig("yellow - other", reward: 'yyyy', nrm: 'grbgr')..announcedColor = ShapeColor.yellow,
+    SceneConfig("red - yellow", reward: 'rrrr', nrm: 'yyyy')..announcedColor = ShapeColor.red,
+    SceneConfig("red - blue", reward: 'rrrr', nrm: 'bbbb')..announcedColor = ShapeColor.red,
+    SceneConfig("red - green", reward: 'rrrr', nrm: 'gggg')..announcedColor = ShapeColor.red,
+    SceneConfig("red - other", reward: 'rrrr', nrm: 'ybgyb')..announcedColor = ShapeColor.red,
+    SceneConfig("blue - yellow", reward: 'bbbb', nrm: 'yyyy')..announcedColor = ShapeColor.blue,
+    SceneConfig("blue - red", reward: 'bbbb', nrm: 'rrrr')..announcedColor = ShapeColor.blue,
+    SceneConfig("blue - green", reward: 'bbbb', nrm: 'gggg')..announcedColor = ShapeColor.blue,
+    SceneConfig("blue - other", reward: 'bbbb', nrm: 'yrgyr')..announcedColor = ShapeColor.blue,
+    SceneConfig("random 1:3", reward: '11', nrm: '223344')..announcedColor = ShapeColor.random1,
   ];
-  get scene => scenes[index];
+  SceneConfig get scene => scenes[index];
 }
