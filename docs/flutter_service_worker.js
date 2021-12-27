@@ -6,7 +6,7 @@ const RESOURCES = {
   "version.json": "e8eb4f6012759eaad4ea5e414f4dfd85",
 "assets/fonts/MaterialIcons-Regular.otf": "4e6447691c9509f7acdbf8a931a85ca1",
 "assets/FontManifest.json": "7b2a36307916a9721811788013e65289",
-"assets/NOTICES": "d91e3e1d29c820d9fdb2cf845a649df9",
+"assets/NOTICES": "db33b28b20dac6cef41b7832352d28c3",
 "assets/assets/success.mp3": "8dab80c0e977346f760bd084b6c644d4",
 "assets/assets/zold.mp3": "4e65949920153fd577c84045b3d832b2",
 "assets/assets/sarga.mp3": "cfc264f1506f377f4a291924bfdcc177",
@@ -25,9 +25,9 @@ const RESOURCES = {
 "icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
 "manifest.json": "eb1c7a9c9f6d79ae5008c1c5057487cb",
 "CNAME": "271f6de364ebb9f7d5a45ae0edab0930",
-"index.html": "50f74f99957bfca4ea4862e03de9ddcb",
-"/": "50f74f99957bfca4ea4862e03de9ddcb",
-"main.dart.js": "1341ef3f094eb62e4c7c6973745b827f"
+"index.html": "7abbc74553dff18aba0ce4190c98d938",
+"/": "7abbc74553dff18aba0ce4190c98d938",
+"main.dart.js": "8c53e3bbbe252bc70c70c5f7b7d3f9d9"
 };
 
 // The application shell files that are downloaded before a service worker can
