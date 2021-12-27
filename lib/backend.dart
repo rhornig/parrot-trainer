@@ -60,10 +60,27 @@ class AppState with ChangeNotifier {
   int failure = 0;
   int noRewardMarker = 0;
   List<double> successRateHistory = [];
+
+  void resetSessionStatistics() {
+    reward = 0;
+    success = 0;
+    neutral = 0;
+    failure = 0;
+    noRewardMarker = 0;
+    successRateHistory = [];
+    notifyListeners();
+  }
+
   static const successWindowSize = 20;
   List<int> successWindow =
       List<int>.filled(successWindowSize, 0, growable: true); // history of the latest 20 events ( 1 = success, 0 = failure)
   int successWindowSum = 0; // the number of successful consequences in the last 'successWindowSize'
+
+  void resetWindowStatistics() {
+    successWindow = List<int>.filled(successWindowSize, 0, growable: true);
+    successWindowSum = 0;
+    notifyListeners();
+  }
 
   AppState() {
     _initSound();

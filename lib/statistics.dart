@@ -37,13 +37,8 @@ class StatisticsPanel extends StatelessWidget {
               GestureDetector(
                 onLongPress: () {
                   state
-                    ..failure = 0
-                    ..neutral = 0
-                    ..success = 0
-                    ..successRateHistory = []
-                    ..successWindow = List<int>.filled(AppState.successWindowSize, 0, growable: true)
-                    ..successWindowSum = 0
-                    ..notify();
+                    ..resetSessionStatistics()
+                    ..resetWindowStatistics();
                 },
                 child: Text(
                   "L${AppState.successWindowSize}S$successWindowPct% S${state.success}+F${state.failure}=∑$sum N${state.neutral}\nS$successPct% vs. $referenceMeanPct±$referenceConfidencePct% (1σ)",
@@ -55,7 +50,7 @@ class StatisticsPanel extends StatelessWidget {
                 onLongPress: () {
                   state
                     ..settingsPanelVisible = true
-                    ..notify();
+                    ..notifyListeners();
                 },
                 child: Icon(Icons.settings, size: 80, color: Colors.grey.shade800),
               ),

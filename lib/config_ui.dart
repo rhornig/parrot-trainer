@@ -31,8 +31,12 @@ class MainConfigPanel extends StatelessWidget {
                         child: Center(child: Text(item.name)),
                       ),
                       onTap: () {
-                        state.config.index = index;
-                        state.sceneDetailsVisible = false;
+                        if (state.config.index != index) {
+                          state
+                            ..config.index = index
+                            ..resetWindowStatistics()
+                            ..calculateReferenceMean();
+                        }
                         onClose();
                       },
                     ),

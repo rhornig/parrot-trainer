@@ -56,8 +56,7 @@ class _ParrotTrainerAppState extends State<ParrotTrainerApp> {
                     onClose: () {
                       state
                         ..settingsPanelVisible = false
-                        ..calculateReferenceMean() // recalculate as the Consequence settings might have changed
-                        ..notify();
+                        ..notifyListeners();
                     },
                   )
                 : Column(
