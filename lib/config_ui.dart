@@ -5,43 +5,43 @@ import 'package:provider/provider.dart';
 import 'backend.dart';
 import 'config.dart';
 
-class SceneConfigListPanel extends StatelessWidget {
-  final MainConfig sceneConfigList;
+class MainConfigPanel extends StatelessWidget {
+  final AppState state;
   final VoidCallback onClose;
-  const SceneConfigListPanel(this.sceneConfigList, {required this.onClose, Key? key}) : super(key: key);
+  const MainConfigPanel(this.state, {required this.onClose, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-        itemCount: sceneConfigList.configs.length,
+        itemCount: state.config.scenes.length,
         itemBuilder: (context, index) {
-          final item = sceneConfigList.configs[index];
+          final item = state.config.scenes[index];
           return Dismissible(
               key: ObjectKey(item),
               child: ListTile(
                 title: Container(
                   height: 50,
-                  color: index == sceneConfigList.index ? Colors.lightBlue : Colors.white10,
+                  color: index == state.config.index ? Colors.lightBlue : Colors.white10,
                   child: Center(child: Text(item.name)),
                 ),
                 onTap: () {
-                  sceneConfigList.index = index;
+                  state.config.index = index;
                   onClose();
                 },
               ),
               direction: DismissDirection.horizontal,
               onDismissed: (direction) {
                 if (direction == DismissDirection.startToEnd) {
-                  sceneConfigList.configs.removeAt(index);
-                  sceneConfigList.notifyListeners();
+                  state.config.scenes.removeAt(index);
+                  state.config.notifyListeners();
                 }
                 if (direction == DismissDirection.endToStart) {}
               },
               confirmDismiss: (direction) async {
-                if (direction == DismissDirection.startToEnd && index != sceneConfigList.index) return true;
+                if (direction == DismissDirection.startToEnd && index != state.config.index) return true;
                 if (direction == DismissDirection.endToStart) {
-                  sceneConfigList.index = index;
-                  sceneConfigList.notifyListeners();
+                  state.config.index = index;
+                  state.config.notifyListeners();
                 }
                 return false;
               },

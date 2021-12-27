@@ -165,7 +165,7 @@ class SceneConfig extends ChangeNotifier {
 @jsonSerializable
 class MainConfig extends ChangeNotifier {
   int index = 0;
-  List<SceneConfig> configs = [
+  List<SceneConfig> scenes = [
     SceneConfig("green - yellow", reward: 'gggg', nrm: 'yyyy'),
     SceneConfig("green - red", reward: 'gggg', nrm: 'rrrr'),
     SceneConfig("green - blue", reward: 'gggg', nrm: 'bbbb'),
@@ -184,5 +184,5 @@ class MainConfig extends ChangeNotifier {
     SceneConfig("blue - other", reward: 'bbbb', nrm: 'yrgyr'),
     SceneConfig("random 1:3", reward: '11', nrm: '223344'),
   ];
-  get active => configs[index];
+  get scene => scenes[index];
 }
