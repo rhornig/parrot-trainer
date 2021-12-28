@@ -18,13 +18,14 @@ class MainConfigPanel extends StatelessWidget {
               state.sceneDetailsVisible = false;
               state.notifyListeners();
             })
-          : ListView.builder(
+          : ReorderableListView.builder(
               itemCount: state.config.scenes.length,
               itemBuilder: (context, index) {
                 final item = state.config.scenes[index];
                 return Dismissible(
                     key: ObjectKey(item),
                     child: ListTile(
+                      contentPadding: EdgeInsets.zero,
                       title: Container(
                         height: 50,
                         color: index == state.config.index ? Colors.lightBlue : Colors.white10,
@@ -66,10 +67,23 @@ class MainConfigPanel extends StatelessWidget {
                         child: Icon(Icons.delete)),
                     secondaryBackground: Container(
                         color: Colors.green,
-                        padding: EdgeInsets.symmetric(horizontal: 20.0),
+                        padding: EdgeInsets.symmetric(horizontal: 50.0),
                         alignment: Alignment.centerRight,
                         child: Icon(Icons.edit)));
-              });
+              },
+              onReorder: (int oldIndex, int newIndex) {
+                if (oldIndex < newIndex) newIndex -= 1;
+                final item = state.config.scenes.removeAt(oldIndex);
+                state.config.scenes.insert(newIndex, item);
+                // keep the active selection at the same place after reordering
+                if (oldIndex == state.config.index)
+                  state.config.index = newIndex;
+                else if (oldIndex < state.config.index && state.config.index <= newIndex)
+                  state.config.index -= 1;
+                else if (oldIndex > state.config.index && state.config.index >= newIndex) state.config.index += 1;
+                state.notifyListeners();
+              },
+            );
     });
   }
 }

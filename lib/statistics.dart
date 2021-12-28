@@ -19,8 +19,6 @@ class StatisticsPanel extends StatelessWidget {
     }
     int referenceMeanPct = (state.referenceMean * 100).round();
     int referenceConfidencePct = (state.referenceStdDev * 100).round();
-    int referenceConfidencePct2 = (state.referenceStdDev * 2 * 100).round();
-    int referenceConfidencePct3 = (state.referenceStdDev * 3 * 100).round();
     int successPct = (probability * 100).round();
     int successWindowPct = (state.successWindowSum * 100 / AppState.successWindowSize).round();
 
