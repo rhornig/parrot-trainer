@@ -39,7 +39,9 @@ class StatisticsPanel extends StatelessWidget {
                     ..resetWindowStatistics();
                 },
                 child: Text(
-                  "L${AppState.successWindowSize}S$successWindowPct% S${state.success}+F${state.failure}=∑$sum N${state.neutral}\nS$successPct% vs. $referenceMeanPct±$referenceConfidencePct% (1σ)",
+                  "${state.config.scene.name}\n"
+                  "L${AppState.successWindowSize}S$successWindowPct% S${state.success}+F${state.failure}=∑$sum N${state.neutral}\n"
+                  "S$successPct% vs. $referenceMeanPct±$referenceConfidencePct% (1σ)",
                   style: TextStyle(color: Colors.grey.shade800, fontSize: 40),
                   textAlign: TextAlign.end,
                 ),

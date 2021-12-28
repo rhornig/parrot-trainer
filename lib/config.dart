@@ -1,6 +1,5 @@
 import 'package:dart_json_mapper/dart_json_mapper.dart' show JsonMapper, jsonSerializable, JsonProperty, enumConverterNumeric;
 import 'package:flutter/foundation.dart';
-//import 'package:flutter/material.dart';
 
 // symbolic shape colors. Random colors must be at the end and they start with random1
 @jsonSerializable
@@ -163,7 +162,6 @@ class SceneConfig with ChangeNotifier {
 
 @jsonSerializable
 class MainConfig with ChangeNotifier {
-  int index = 0;
   List<SceneConfig> scenes = [
     SceneConfig("green - yellow", reward: 'gggg', nrm: 'yyyy')..announcedColor = ShapeColor.green,
     SceneConfig("green - red", reward: 'gggg', nrm: 'rrrr')..announcedColor = ShapeColor.green,
@@ -183,5 +181,28 @@ class MainConfig with ChangeNotifier {
     SceneConfig("blue - other", reward: 'bbbb', nrm: 'yrgyr')..announcedColor = ShapeColor.blue,
     SceneConfig("random 1:3", reward: '11', nrm: '223344')..announcedColor = ShapeColor.random1,
   ];
+
+  int _index = 0;
+  int get index => _index;
+  set index(int index) {
+    _index = index;
+    notifyListeners();
+  }
+
+  int _loopSize = 0; // the number of scene profiles in the loop. 0 means no looping
+  int get loopSize => _loopSize;
+  set loopSize(int loopSize) {
+    _loopSize = loopSize;
+    notifyListeners();
+  }
+
+  // The required success rate in the last 20 event to advance to the next scene profile automatically, (> 100 means never)
+  int _successRateForNextStep = 105;
+  int get successRateForNextStep => _successRateForNextStep;
+  set successRateForNextStep(int successRateForNextStep) {
+    _successRateForNextStep = successRateForNextStep;
+    notifyListeners();
+  }
+
   SceneConfig get scene => scenes[index];
 }

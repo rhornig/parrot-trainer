@@ -146,4 +146,4 @@ class TouchTarget extends StatelessWidget {
   }
 }
 
-//print(JsonMapper.serialize(state.scene));
+//print(JsonMapper.serialize(state.config));

@@ -18,71 +18,123 @@ class MainConfigPanel extends StatelessWidget {
               state.sceneDetailsVisible = false;
               state.notifyListeners();
             })
-          : ReorderableListView.builder(
-              itemCount: state.config.scenes.length,
-              itemBuilder: (context, index) {
-                final item = state.config.scenes[index];
-                return Dismissible(
-                    key: ObjectKey(item),
-                    child: ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Container(
-                        height: 50,
-                        color: index == state.config.index ? Colors.lightBlue : Colors.white10,
-                        child: Center(child: Text(item.name)),
-                      ),
-                      onTap: () {
-                        if (state.config.index != index) {
-                          state
-                            ..config.index = index
-                            ..resetWindowStatistics()
-                            ..calculateReferenceMean();
-                        }
-                        onClose();
-                      },
-                    ),
-                    direction: DismissDirection.horizontal,
-                    onDismissed: (direction) {
-                      if (direction == DismissDirection.startToEnd) {
-                        state.config.scenes.removeAt(index);
-                        state.config.notifyListeners();
-                      }
-                      if (direction == DismissDirection.endToStart) {
-                        state.sceneDetailsVisible = true;
-                        state.notifyListeners();
-                      }
+          : Column(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: ReorderableListView.builder(
+                    itemCount: state.config.scenes.length,
+                    itemBuilder: (context, index) {
+                      final item = state.config.scenes[index];
+                      return Dismissible(
+                          key: ObjectKey(item),
+                          child: ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Container(
+                              height: 50,
+                              color: index == state.config.index
+                                  ? Colors.lightBlue
+                                  : state.config.loopSize > 0 && index < state.config.loopSize
+                                      ? Colors.white38
+                                      : Colors.white10,
+                              child: Center(child: Text(item.name)),
+                            ),
+                            onTap: () {
+                              if (state.config.index != index) {
+                                state
+                                  ..config.index = index
+                                  ..resetWindowStatistics()
+                                  ..calculateReferenceMean();
+                              }
+                              onClose();
+                            },
+                          ),
+                          direction: DismissDirection.horizontal,
+                          onDismissed: (direction) {
+                            if (direction == DismissDirection.startToEnd) {
+                              state.config.scenes.removeAt(index);
+                              state.config.notifyListeners();
+                            }
+                            if (direction == DismissDirection.endToStart) {
+                              state.sceneDetailsVisible = true;
+                              state.notifyListeners();
+                            }
+                          },
+                          confirmDismiss: (direction) async {
+                            if (direction == DismissDirection.startToEnd && index != state.config.index) return true;
+                            if (direction == DismissDirection.endToStart) {
+                              state.config.index = index;
+                              return true;
+                            }
+                            return false;
+                          },
+                          background: Container(
+                              color: Colors.red,
+                              padding: EdgeInsets.symmetric(horizontal: 20.0),
+                              alignment: Alignment.centerLeft,
+                              child: Icon(Icons.delete)),
+                          secondaryBackground: Container(
+                              color: Colors.green,
+                              padding: EdgeInsets.symmetric(horizontal: 50.0),
+                              alignment: Alignment.centerRight,
+                              child: Icon(Icons.edit)));
                     },
-                    confirmDismiss: (direction) async {
-                      if (direction == DismissDirection.startToEnd && index != state.config.index) return true;
-                      if (direction == DismissDirection.endToStart) {
-                        state.config.index = index;
-                        return true;
-                      }
-                      return false;
+                    onReorder: (int oldIndex, int newIndex) {
+                      if (oldIndex < newIndex) newIndex -= 1;
+                      final item = state.config.scenes.removeAt(oldIndex);
+                      state.config.scenes.insert(newIndex, item);
+                      // keep the active selection at the same place after reordering
+
+                      if (oldIndex < state.config.index && state.config.index <= newIndex)
+                        state.config.index -= 1;
+                      else if (oldIndex > state.config.index && state.config.index >= newIndex)
+                        state.config.index += 1;
+                      else if (oldIndex == state.config.index) state.config.index = newIndex;
+                      state.notifyListeners();
                     },
-                    background: Container(
-                        color: Colors.red,
-                        padding: EdgeInsets.symmetric(horizontal: 20.0),
-                        alignment: Alignment.centerLeft,
-                        child: Icon(Icons.delete)),
-                    secondaryBackground: Container(
-                        color: Colors.green,
-                        padding: EdgeInsets.symmetric(horizontal: 50.0),
-                        alignment: Alignment.centerRight,
-                        child: Icon(Icons.edit)));
-              },
-              onReorder: (int oldIndex, int newIndex) {
-                if (oldIndex < newIndex) newIndex -= 1;
-                final item = state.config.scenes.removeAt(oldIndex);
-                state.config.scenes.insert(newIndex, item);
-                // keep the active selection at the same place after reordering
-                if (oldIndex == state.config.index)
-                  state.config.index = newIndex;
-                else if (oldIndex < state.config.index && state.config.index <= newIndex)
-                  state.config.index -= 1;
-                else if (oldIndex > state.config.index && state.config.index >= newIndex) state.config.index += 1;
-                state.notifyListeners();
-              },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: SizedBox(
+                    height: 40,
+                    width: double.infinity,
+                    child: ElevatedButton(
+                        child: Text("New scene configuration"),
+                        onPressed: () {
+                          state.config.scenes.insert(0, SceneConfig("New configuration"));
+                          state.config.index = 0;
+                          state.sceneDetailsVisible = true;
+                          state.notifyListeners();
+                        }),
+                  ),
+                ),
+                Slider(
+                  value: state.config.loopSize.toDouble(),
+                  min: 0,
+                  max: 10,
+                  divisions: 10,
+                  label: state.config.loopSize == 0 ? "do not loop" : "loop the first ${state.config.loopSize} scenes",
+                  onChanged: (double value) {
+                    state.config.loopSize = value.toInt();
+                    state.notifyListeners();
+                  },
+                ),
+                Slider(
+                  value: state.config.successRateForNextStep.toDouble(),
+                  min: 50,
+                  max: 105,
+                  divisions: 11,
+                  label: state.config.successRateForNextStep > 100
+                      ? "do not advance automatically"
+                      : "advance on success rate: ${state.config.successRateForNextStep}%",
+                  onChanged: (double value) {
+                    state.config.successRateForNextStep = value.toInt();
+                    state.notifyListeners();
+                  },
+                ),
+              ],
             );
     });
   }

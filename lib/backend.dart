@@ -7,6 +7,40 @@ import 'package:soundpool/soundpool.dart';
 
 import 'config.dart';
 
+/// low latency sound engine
+enum Sound { none, nrm, reward, red, blue, green, yellow, one, two, three, circle, triangle, square }
+const _soundToFileName = {
+  Sound.nrm: "failure.mp3",
+  Sound.reward: "success.mp3",
+  Sound.red: "piros.mp3",
+  Sound.blue: "kek.mp3",
+  Sound.green: "zold.mp3",
+  Sound.yellow: "sarga.mp3",
+  Sound.one: "egy.mp3",
+  Sound.two: "ketto.mp3",
+  Sound.three: "harom.mp3",
+  Sound.circle: "kor.mp3",
+  Sound.triangle: "haromszog.mp3",
+  Sound.square: "negyszog.mp3",
+};
+
+var _soundPool = Soundpool(streamType: StreamType.notification);
+var _soundToId = Map<Sound, int>();
+
+Future<void> _initSound() async {
+  for (var s in Sound.values)
+    if (s != Sound.none) _soundToId[s] = await _soundPool.load(await rootBundle.load("assets/${_soundToFileName[s]}"));
+}
+
+Future<int> _playSound(Sound sound) async {
+  if (sound == Sound.none) return 0;
+
+  int soundId = _soundToId[sound] ?? await _soundPool.load(await rootBundle.load("assets/${_soundToFileName[sound]}"));
+  if (soundId >= 0) _soundToId[sound] = soundId;
+
+  return await _soundPool.play(soundId);
+}
+
 /// data classes
 
 extension ShapeColorExt on ShapeColor {
@@ -72,8 +106,8 @@ class AppState with ChangeNotifier {
   }
 
   static const successWindowSize = 20;
-  List<int> successWindow =
-      List<int>.filled(successWindowSize, 0, growable: true); // history of the latest 20 events ( 1 = success, 0 = failure)
+  // history of the latest 20 events ( 1 = success, 0 = failure)
+  List<int> successWindow = List<int>.filled(successWindowSize, 0, growable: true);
   int successWindowSum = 0; // the number of successful consequences in the last 'successWindowSize'
 
   void resetWindowStatistics() {
@@ -105,14 +139,19 @@ class AppState with ChangeNotifier {
     notifyListeners();
   }
 
-  /// notify all widgets listening on state changes
-  void notify() => notifyListeners();
-
   // pass 0 for failure and 1 for success. Stores the passed value in a FIFO of size 'successWindowSize'
   void _updateSuccessWindow(int e) {
     if (successWindow.length == successWindowSize) successWindowSum -= successWindow.removeLast();
     successWindow.insert(0, e);
     successWindowSum += e;
+  }
+
+  // advance to the next scene if the required conditions are met (and clear the window statistics)
+  void _testAndAdvanceToNextScene() {
+    if (config.loopSize > 1 && successWindowSum * 100 >= successWindowSize * config.successRateForNextStep) {
+      config.index = (config.index + 1) % config.loopSize;
+      resetWindowStatistics();
+    }
   }
 
   void executeConsequence(Consequence consequence) {
@@ -155,8 +194,9 @@ class AppState with ChangeNotifier {
 
     // success
     if (consequence == Consequence.success || consequence == Consequence.reward) {
-      _updateSuccessWindow(1);
       success++;
+      _updateSuccessWindow(1);
+      _testAndAdvanceToNextScene();
       if (config.scene.shuffleOnSuccess) config.scene.targets.shuffle();
       randomSeed = _rng.nextInt(1000);
 
@@ -186,38 +226,7 @@ class AppState with ChangeNotifier {
     inputAllowed = true;
     notifyListeners();
   }
-}
 
-/// low latency sound engine
-enum Sound { none, nrm, reward, red, blue, green, yellow, one, two, three, circle, triangle, square }
-const _soundToFileName = {
-  Sound.nrm: "failure.mp3",
-  Sound.reward: "success.mp3",
-  Sound.red: "piros.mp3",
-  Sound.blue: "kek.mp3",
-  Sound.green: "zold.mp3",
-  Sound.yellow: "sarga.mp3",
-  Sound.one: "egy.mp3",
-  Sound.two: "ketto.mp3",
-  Sound.three: "harom.mp3",
-  Sound.circle: "kor.mp3",
-  Sound.triangle: "haromszog.mp3",
-  Sound.square: "negyszog.mp3",
-};
-
-var _soundPool = Soundpool(streamType: StreamType.notification);
-var _soundToId = Map<Sound, int>();
-
-Future<void> _initSound() async {
-  for (var s in Sound.values)
-    if (s != Sound.none) _soundToId[s] = await _soundPool.load(await rootBundle.load("assets/${_soundToFileName[s]}"));
-}
-
-Future<int> _playSound(Sound sound) async {
-  if (sound == Sound.none) return 0;
-
-  int soundId = _soundToId[sound] ?? await _soundPool.load(await rootBundle.load("assets/${_soundToFileName[sound]}"));
-  if (soundId >= 0) _soundToId[sound] = soundId;
-
-  return await _soundPool.play(soundId);
+  /// notify all widgets listening on state changes
+  void notify() => notifyListeners();
 }
